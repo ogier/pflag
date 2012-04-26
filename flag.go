@@ -236,6 +236,7 @@ type FlagSet struct {
 // A Flag represents the state of a flag.
 type Flag struct {
 	Name     string // name as it appears on command line
+	Shortcut string // one-letter abbreviated flag
 	Usage    string // help message
 	Value    Value  // value as set
 	DefValue string // default value (as text); for usage message
@@ -402,209 +403,385 @@ func Args() []string { return commandLine.args }
 // BoolVar defines a bool flag with specified name, default value, and usage string.
 // The argument p points to a bool variable in which to store the value of the flag.
 func (f *FlagSet) BoolVar(p *bool, name string, value bool, usage string) {
-	f.Var(newBoolValue(value, p), name, usage)
+	f.VarP(newBoolValue(value, p), name, "", usage)
+}
+
+// Like BoolVar, but accepts a shortcut letter that can be used after a single dash.
+func (f *FlagSet) BoolVarP(p *bool, name, shortcut string, value bool, usage string) {
+	f.VarP(newBoolValue(value, p), name, shortcut, usage)
 }
 
 // BoolVar defines a bool flag with specified name, default value, and usage string.
 // The argument p points to a bool variable in which to store the value of the flag.
 func BoolVar(p *bool, name string, value bool, usage string) {
-	commandLine.Var(newBoolValue(value, p), name, usage)
+	commandLine.VarP(newBoolValue(value, p), name, "", usage)
+}
+
+// Like BoolVar, but accepts a shortcut letter that can be used after a single dash.
+func BoolVarP(p *bool, name, shortcut string, value bool, usage string) {
+	commandLine.VarP(newBoolValue(value, p), name, shortcut, usage)
 }
 
 // Bool defines a bool flag with specified name, default value, and usage string.
 // The return value is the address of a bool variable that stores the value of the flag.
 func (f *FlagSet) Bool(name string, value bool, usage string) *bool {
 	p := new(bool)
-	f.BoolVar(p, name, value, usage)
+	f.BoolVarP(p, name, "", value, usage)
+	return p
+}
+
+// Like Bool, but accepts a shortcut letter that can be used after a single dash.
+func (f *FlagSet) BoolP(name, shortcut string, value bool, usage string) *bool {
+	p := new(bool)
+	f.BoolVarP(p, name, shortcut, value, usage)
 	return p
 }
 
 // Bool defines a bool flag with specified name, default value, and usage string.
 // The return value is the address of a bool variable that stores the value of the flag.
 func Bool(name string, value bool, usage string) *bool {
-	return commandLine.Bool(name, value, usage)
+	return commandLine.BoolP(name, "", value, usage)
+}
+
+// Like Bool, but accepts a shortcut letter that can be used after a single dash.
+func BoolP(name, shortcut string, value bool, usage string) *bool {
+	return commandLine.BoolP(name, shortcut, value, usage)
 }
 
 // IntVar defines an int flag with specified name, default value, and usage string.
 // The argument p points to an int variable in which to store the value of the flag.
 func (f *FlagSet) IntVar(p *int, name string, value int, usage string) {
-	f.Var(newIntValue(value, p), name, usage)
+	f.VarP(newIntValue(value, p), name, "", usage)
+}
+
+// Like IntVar, but accepts a shortcut letter that can be used after a single dash.
+func (f *FlagSet) IntVarP(p *int, name, shortcut string, value int, usage string) {
+	f.VarP(newIntValue(value, p), name, shortcut, usage)
 }
 
 // IntVar defines an int flag with specified name, default value, and usage string.
 // The argument p points to an int variable in which to store the value of the flag.
 func IntVar(p *int, name string, value int, usage string) {
-	commandLine.Var(newIntValue(value, p), name, usage)
+	commandLine.VarP(newIntValue(value, p), name, "", usage)
+}
+
+// Like IntVar, but accepts a shortcut letter that can be used after a single dash.
+func IntVarP(p *int, name, shortcut string, value int, usage string) {
+	commandLine.VarP(newIntValue(value, p), name, shortcut, usage)
 }
 
 // Int defines an int flag with specified name, default value, and usage string.
 // The return value is the address of an int variable that stores the value of the flag.
 func (f *FlagSet) Int(name string, value int, usage string) *int {
 	p := new(int)
-	f.IntVar(p, name, value, usage)
+	f.IntVarP(p, name, "", value, usage)
+	return p
+}
+
+// Like Int, but accepts a shortcut letter that can be used after a single dash.
+func (f *FlagSet) IntP(name, shortcut string, value int, usage string) *int {
+	p := new(int)
+	f.IntVarP(p, name, shortcut, value, usage)
 	return p
 }
 
 // Int defines an int flag with specified name, default value, and usage string.
 // The return value is the address of an int variable that stores the value of the flag.
 func Int(name string, value int, usage string) *int {
-	return commandLine.Int(name, value, usage)
+	return commandLine.IntP(name, "", value, usage)
+}
+
+// Like Int, but accepts a shortcut letter that can be used after a single dash.
+func IntP(name, shortcut string, value int, usage string) *int {
+	return commandLine.IntP(name, shortcut, value, usage)
 }
 
 // Int64Var defines an int64 flag with specified name, default value, and usage string.
 // The argument p points to an int64 variable in which to store the value of the flag.
 func (f *FlagSet) Int64Var(p *int64, name string, value int64, usage string) {
-	f.Var(newInt64Value(value, p), name, usage)
+	f.VarP(newInt64Value(value, p), name, "", usage)
+}
+
+// Like Int64Var, but accepts a shortcut letter that can be used after a single dash.
+func (f *FlagSet) Int64VarP(p *int64, name, shortcut string, value int64, usage string) {
+	f.VarP(newInt64Value(value, p), name, shortcut, usage)
 }
 
 // Int64Var defines an int64 flag with specified name, default value, and usage string.
 // The argument p points to an int64 variable in which to store the value of the flag.
 func Int64Var(p *int64, name string, value int64, usage string) {
-	commandLine.Var(newInt64Value(value, p), name, usage)
+	commandLine.VarP(newInt64Value(value, p), name, "", usage)
+}
+
+// Like Int64Var, but accepts a shortcut letter that can be used after a single dash.
+func Int64VarP(p *int64, name, shortcut string, value int64, usage string) {
+	commandLine.VarP(newInt64Value(value, p), name, shortcut, usage)
 }
 
 // Int64 defines an int64 flag with specified name, default value, and usage string.
 // The return value is the address of an int64 variable that stores the value of the flag.
 func (f *FlagSet) Int64(name string, value int64, usage string) *int64 {
 	p := new(int64)
-	f.Int64Var(p, name, value, usage)
+	f.Int64VarP(p, name, "", value, usage)
+	return p
+}
+
+// Like Int64, but accepts a shortcut letter that can be used after a single dash.
+func (f *FlagSet) Int64P(name, shortcut string, value int64, usage string) *int64 {
+	p := new(int64)
+	f.Int64VarP(p, name, shortcut, value, usage)
 	return p
 }
 
 // Int64 defines an int64 flag with specified name, default value, and usage string.
 // The return value is the address of an int64 variable that stores the value of the flag.
 func Int64(name string, value int64, usage string) *int64 {
-	return commandLine.Int64(name, value, usage)
+	return commandLine.Int64P(name, "", value, usage)
+}
+
+// Like Int64, but accepts a shortcut letter that can be used after a single dash.
+func Int64P(name, shortcut string, value int64, usage string) *int64 {
+	return commandLine.Int64P(name, shortcut, value, usage)
 }
 
 // UintVar defines a uint flag with specified name, default value, and usage string.
 // The argument p points to a uint variable in which to store the value of the flag.
 func (f *FlagSet) UintVar(p *uint, name string, value uint, usage string) {
-	f.Var(newUintValue(value, p), name, usage)
+	f.VarP(newUintValue(value, p), name, "", usage)
+}
+
+// Like UintVar, but accepts a shortcut letter that can be used after a single dash.
+func (f *FlagSet) UintVarP(p *uint, name, shortcut string, value uint, usage string) {
+	f.VarP(newUintValue(value, p), name, shortcut, usage)
 }
 
 // UintVar defines a uint flag with specified name, default value, and usage string.
 // The argument p points to a uint  variable in which to store the value of the flag.
 func UintVar(p *uint, name string, value uint, usage string) {
-	commandLine.Var(newUintValue(value, p), name, usage)
+	commandLine.VarP(newUintValue(value, p), name, "", usage)
+}
+
+// Like UintVar, but accepts a shortcut letter that can be used after a single dash.
+func UintVarP(p *uint, name, shortcut string, value uint, usage string) {
+	commandLine.VarP(newUintValue(value, p), name, shortcut, usage)
 }
 
 // Uint defines a uint flag with specified name, default value, and usage string.
 // The return value is the address of a uint  variable that stores the value of the flag.
 func (f *FlagSet) Uint(name string, value uint, usage string) *uint {
 	p := new(uint)
-	f.UintVar(p, name, value, usage)
+	f.UintVarP(p, name, "", value, usage)
+	return p
+}
+
+// Like Uint, but accepts a shortcut letter that can be used after a single dash.
+func (f *FlagSet) UintP(name, shortcut string, value uint, usage string) *uint {
+	p := new(uint)
+	f.UintVarP(p, name, shortcut, value, usage)
 	return p
 }
 
 // Uint defines a uint flag with specified name, default value, and usage string.
 // The return value is the address of a uint  variable that stores the value of the flag.
 func Uint(name string, value uint, usage string) *uint {
-	return commandLine.Uint(name, value, usage)
+	return commandLine.UintP(name, "", value, usage)
+}
+
+// Like Uint, but accepts a shortcut letter that can be used after a single dash.
+func UintP(name, shortcut string, value uint, usage string) *uint {
+	return commandLine.UintP(name, shortcut, value, usage)
 }
 
 // Uint64Var defines a uint64 flag with specified name, default value, and usage string.
 // The argument p points to a uint64 variable in which to store the value of the flag.
 func (f *FlagSet) Uint64Var(p *uint64, name string, value uint64, usage string) {
-	f.Var(newUint64Value(value, p), name, usage)
+	f.VarP(newUint64Value(value, p), name, "", usage)
+}
+
+// Like Uint64Var, but accepts a shortcut letter that can be used after a single dash.
+func (f *FlagSet) Uint64VarP(p *uint64, name, shortcut string, value uint64, usage string) {
+	f.VarP(newUint64Value(value, p), name, shortcut, usage)
 }
 
 // Uint64Var defines a uint64 flag with specified name, default value, and usage string.
 // The argument p points to a uint64 variable in which to store the value of the flag.
 func Uint64Var(p *uint64, name string, value uint64, usage string) {
-	commandLine.Var(newUint64Value(value, p), name, usage)
+	commandLine.VarP(newUint64Value(value, p), name, "", usage)
+}
+
+// Like Uint64Var, but accepts a shortcut letter that can be used after a single dash.
+func Uint64VarP(p *uint64, name, shortcut string, value uint64, usage string) {
+	commandLine.VarP(newUint64Value(value, p), name, shortcut, usage)
 }
 
 // Uint64 defines a uint64 flag with specified name, default value, and usage string.
 // The return value is the address of a uint64 variable that stores the value of the flag.
 func (f *FlagSet) Uint64(name string, value uint64, usage string) *uint64 {
 	p := new(uint64)
-	f.Uint64Var(p, name, value, usage)
+	f.Uint64VarP(p, name, "", value, usage)
+	return p
+}
+
+// Like Uint64, but accepts a shortcut letter that can be used after a single dash.
+func (f *FlagSet) Uint64P(name, shortcut string, value uint64, usage string) *uint64 {
+	p := new(uint64)
+	f.Uint64VarP(p, name, shortcut, value, usage)
 	return p
 }
 
 // Uint64 defines a uint64 flag with specified name, default value, and usage string.
 // The return value is the address of a uint64 variable that stores the value of the flag.
 func Uint64(name string, value uint64, usage string) *uint64 {
-	return commandLine.Uint64(name, value, usage)
+	return commandLine.Uint64P(name, "", value, usage)
+}
+
+// Like Uint64, but accepts a shortcut letter that can be used after a single dash.
+func Uint64P(name, shortcut string, value uint64, usage string) *uint64 {
+	return commandLine.Uint64P(name, shortcut, value, usage)
 }
 
 // StringVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a string variable in which to store the value of the flag.
 func (f *FlagSet) StringVar(p *string, name string, value string, usage string) {
-	f.Var(newStringValue(value, p), name, usage)
+	f.VarP(newStringValue(value, p), name, "", usage)
+}
+
+// Like StringVar, but accepts a shortcut letter that can be used after a single dash.
+func (f *FlagSet) StringVarP(p *string, name, shortcut string, value string, usage string) {
+	f.VarP(newStringValue(value, p), name, shortcut, usage)
 }
 
 // StringVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a string variable in which to store the value of the flag.
 func StringVar(p *string, name string, value string, usage string) {
-	commandLine.Var(newStringValue(value, p), name, usage)
+	commandLine.VarP(newStringValue(value, p), name, "", usage)
+}
+
+// Like StringVar, but accepts a shortcut letter that can be used after a single dash.
+func StringVarP(p *string, name, shortcut string, value string, usage string) {
+	commandLine.VarP(newStringValue(value, p), name, shortcut, usage)
 }
 
 // String defines a string flag with specified name, default value, and usage string.
 // The return value is the address of a string variable that stores the value of the flag.
 func (f *FlagSet) String(name string, value string, usage string) *string {
 	p := new(string)
-	f.StringVar(p, name, value, usage)
+	f.StringVarP(p, name, "", value, usage)
+	return p
+}
+
+// Like String, but accepts a shortcut letter that can be used after a single dash.
+func (f *FlagSet) StringP(name, shortcut string, value string, usage string) *string {
+	p := new(string)
+	f.StringVarP(p, name, shortcut, value, usage)
 	return p
 }
 
 // String defines a string flag with specified name, default value, and usage string.
 // The return value is the address of a string variable that stores the value of the flag.
 func String(name string, value string, usage string) *string {
-	return commandLine.String(name, value, usage)
+	return commandLine.StringP(name, "", value, usage)
+}
+
+// Like String, but accepts a shortcut letter that can be used after a single dash.
+func StringP(name, shortcut string, value string, usage string) *string {
+	return commandLine.StringP(name, shortcut, value, usage)
 }
 
 // Float64Var defines a float64 flag with specified name, default value, and usage string.
 // The argument p points to a float64 variable in which to store the value of the flag.
 func (f *FlagSet) Float64Var(p *float64, name string, value float64, usage string) {
-	f.Var(newFloat64Value(value, p), name, usage)
+	f.VarP(newFloat64Value(value, p), name, "", usage)
+}
+
+// Like Float64Var, but accepts a shortcut letter that can be used after a single dash.
+func (f *FlagSet) Float64VarP(p *float64, name, shortcut string, value float64, usage string) {
+	f.VarP(newFloat64Value(value, p), name, shortcut, usage)
 }
 
 // Float64Var defines a float64 flag with specified name, default value, and usage string.
 // The argument p points to a float64 variable in which to store the value of the flag.
 func Float64Var(p *float64, name string, value float64, usage string) {
-	commandLine.Var(newFloat64Value(value, p), name, usage)
+	commandLine.VarP(newFloat64Value(value, p), name, "", usage)
+}
+
+// Like Float64Var, but accepts a shortcut letter that can be used after a single dash.
+func Float64VarP(p *float64, name, shortcut string, value float64, usage string) {
+	commandLine.VarP(newFloat64Value(value, p), name, shortcut, usage)
 }
 
 // Float64 defines a float64 flag with specified name, default value, and usage string.
 // The return value is the address of a float64 variable that stores the value of the flag.
 func (f *FlagSet) Float64(name string, value float64, usage string) *float64 {
 	p := new(float64)
-	f.Float64Var(p, name, value, usage)
+	f.Float64VarP(p, name, "", value, usage)
+	return p
+}
+
+// Like Float64, but accepts a shortcut letter that can be used after a single dash.
+func (f *FlagSet) Float64P(name, shortcut string, value float64, usage string) *float64 {
+	p := new(float64)
+	f.Float64VarP(p, name, shortcut, value, usage)
 	return p
 }
 
 // Float64 defines a float64 flag with specified name, default value, and usage string.
 // The return value is the address of a float64 variable that stores the value of the flag.
 func Float64(name string, value float64, usage string) *float64 {
-	return commandLine.Float64(name, value, usage)
+	return commandLine.Float64P(name, "", value, usage)
+}
+
+// Like Float64, but accepts a shortcut letter that can be used after a single dash.
+func Float64P(name, shortcut string, value float64, usage string) *float64 {
+	return commandLine.Float64P(name, shortcut, value, usage)
 }
 
 // DurationVar defines a time.Duration flag with specified name, default value, and usage string.
 // The argument p points to a time.Duration variable in which to store the value of the flag.
 func (f *FlagSet) DurationVar(p *time.Duration, name string, value time.Duration, usage string) {
-	f.Var(newDurationValue(value, p), name, usage)
+	f.VarP(newDurationValue(value, p), name, "", usage)
+}
+
+// Like DurationVar, but accepts a shortcut letter that can be used after a single dash.
+func (f *FlagSet) DurationVarP(p *time.Duration, name, shortcut string, value time.Duration, usage string) {
+	f.VarP(newDurationValue(value, p), name, shortcut, usage)
 }
 
 // DurationVar defines a time.Duration flag with specified name, default value, and usage string.
 // The argument p points to a time.Duration variable in which to store the value of the flag.
 func DurationVar(p *time.Duration, name string, value time.Duration, usage string) {
-	commandLine.Var(newDurationValue(value, p), name, usage)
+	commandLine.VarP(newDurationValue(value, p), name, "", usage)
+}
+
+// Like DurationVar, but accepts a shortcut letter that can be used after a single dash.
+func DurationVarP(p *time.Duration, name, shortcut string, value time.Duration, usage string) {
+	commandLine.VarP(newDurationValue(value, p), name, shortcut, usage)
 }
 
 // Duration defines a time.Duration flag with specified name, default value, and usage string.
 // The return value is the address of a time.Duration variable that stores the value of the flag.
 func (f *FlagSet) Duration(name string, value time.Duration, usage string) *time.Duration {
 	p := new(time.Duration)
-	f.DurationVar(p, name, value, usage)
+	f.DurationVarP(p, name, "", value, usage)
+	return p
+}
+
+// Like Duration, but accepts a shortcut letter that can be used after a single dash.
+func (f *FlagSet) DurationP(name, shortcut string, value time.Duration, usage string) *time.Duration {
+	p := new(time.Duration)
+	f.DurationVarP(p, name, shortcut, value, usage)
 	return p
 }
 
 // Duration defines a time.Duration flag with specified name, default value, and usage string.
 // The return value is the address of a time.Duration variable that stores the value of the flag.
 func Duration(name string, value time.Duration, usage string) *time.Duration {
-	return commandLine.Duration(name, value, usage)
+	return commandLine.DurationP(name, "", value, usage)
+}
+
+// Like Duration, but accepts a shortcut letter that can be used after a single dash.
+func DurationP(name, shortcut string, value time.Duration, usage string) *time.Duration {
+	return commandLine.DurationP(name, shortcut, value, usage)
 }
 
 // Var defines a flag with the specified name and usage string. The type and
@@ -614,8 +791,13 @@ func Duration(name string, value time.Duration, usage string) *time.Duration {
 // of strings by giving the slice the methods of Value; in particular, Set would
 // decompose the comma-separated string into the slice.
 func (f *FlagSet) Var(value Value, name string, usage string) {
+	f.VarP(value, name, "", usage)
+}
+
+// Like Var, but accepts a shortcut letter that can be used after a single dash.
+func (f *FlagSet) VarP(value Value, name, shortcut, usage string) {
 	// Remember the default value as a string; it won't change.
-	flag := &Flag{name, usage, value, value.String()}
+	flag := &Flag{name, shortcut, usage, value, value.String()}
 	_, alreadythere := f.formal[name]
 	if alreadythere {
 		fmt.Fprintf(f.out(), "%s flag redefined: %s\n", f.name, name)
@@ -627,6 +809,7 @@ func (f *FlagSet) Var(value Value, name string, usage string) {
 	f.formal[name] = flag
 }
 
+
 // Var defines a flag with the specified name and usage string. The type and
 // value of the flag are represented by the first argument, of type Value, which
 // typically holds a user-defined implementation of Value. For instance, the
@@ -634,7 +817,7 @@ func (f *FlagSet) Var(value Value, name string, usage string) {
 // of strings by giving the slice the methods of Value; in particular, Set would
 // decompose the comma-separated string into the slice.
 func Var(value Value, name string, usage string) {
-	commandLine.Var(value, name, usage)
+	commandLine.VarP(value, name, "", usage)
 }
 
 // failf prints to standard error a formatted error and usage message and
