@@ -58,7 +58,7 @@
 	analogous to the top-level functions for the command-line
 	flag set.
 */
-package flag
+package pflag
 
 import (
 	"errors"

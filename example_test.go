@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 // These examples demonstrate more intricate uses of the flag package.
-package flag_test
+package pflag_test
 
 import (
 	"errors"

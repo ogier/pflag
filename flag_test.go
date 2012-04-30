@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package flag_test
+package pflag_test
 
 import (
 	"bytes"
-	. "flag"
+	. "pflag"
 	"fmt"
 	"os"
 	"sort"
