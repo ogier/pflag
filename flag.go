@@ -227,6 +227,7 @@ type FlagSet struct {
 	parsed        bool
 	actual        map[string]*Flag
 	formal        map[string]*Flag
+	shortcuts     map[byte]*Flag
 	args          []string // arguments after flags
 	exitOnError   bool     // does the program exit if there's an error?
 	errorHandling ErrorHandling
@@ -807,6 +808,24 @@ func (f *FlagSet) VarP(value Value, name, shortcut, usage string) {
 		f.formal = make(map[string]*Flag)
 	}
 	f.formal[name] = flag
+
+	if len(shortcut) == 0 {
+		return
+	}
+	if len(shortcut) > 1 {
+		fmt.Fprintf(f.out(), "%s shortcut more than ASCII character: %s\n", f.name, shortcut)
+		panic("shortcut is more than one character")
+	}
+	if f.shortcuts == nil {
+		f.shortcuts = make(map[byte]*Flag)
+	}
+	c := shortcut[0]
+	old, alreadythere := f.shortcuts[c]
+	if alreadythere {
+		fmt.Fprintf(f.out(), "%s shortcut reused: %q for %s and %s\n", f.name, c, name, old.Name)
+		panic("shortcut redefinition")
+	}
+	f.shortcuts[c] = flag
 }
 
 
@@ -841,76 +860,105 @@ func (f *FlagSet) usage() {
 	}
 }
 
-// parseOne parses one flag. It returns whether a flag was seen.
-func (f *FlagSet) parseOne() (bool, error) {
-	if len(f.args) == 0 {
-		return false, nil
-	}
-	s := f.args[0]
-	if len(s) == 0 || s[0] != '-' || len(s) == 1 {
-		return false, nil
-	}
-	num_minuses := 1
-	if s[1] == '-' {
-		num_minuses++
-		if len(s) == 2 { // "--" terminates the flags
-			f.args = f.args[1:]
-			return false, nil
+func (f *FlagSet) parseArgs(args []string) error {
+	for len(args) > 0 {
+		s := args[0]
+		args = args[1:]
+		if len(s) == 0 || s[0] != '-' || len(s) == 1 {
+			f.args = append(f.args, s)
+			continue
 		}
-	}
-	name := s[num_minuses:]
-	if len(name) == 0 || name[0] == '-' || name[0] == '=' {
-		return false, f.failf("bad flag syntax: %s", s)
-	}
 
-	// it's a flag. does it have an argument?
-	f.args = f.args[1:]
-	has_value := false
-	value := ""
-	for i := 1; i < len(name); i++ { // equals cannot be first
-		if name[i] == '=' {
-			value = name[i+1:]
-			has_value = true
-			name = name[0:i]
-			break
+		var flag *Flag = nil
+		has_value := false
+		value := ""
+		if s[1] == '-' {
+			if len(s) == 2 { // "--" terminates the flags
+				f.args = append(f.args, args...)
+				return nil
+			}
+			name := s[2:]
+			if len(name) == 0 || name[0] == '-' || name[0] == '=' {
+				return f.failf("bad flag syntax: %s", s)
+			}
+			// check for = argument to flag
+			for i := 1; i < len(name); i++ { // equals cannot be first
+				if name[i] == '=' {
+					value = name[i+1:]
+					has_value = true
+					name = name[0:i]
+					break
+				}
+			}
+			m := f.formal
+			_, alreadythere := m[name] // BUG
+			if !alreadythere {
+				if name == "help" { // special case for nice help message.
+					f.usage()
+					return ErrHelp
+				}
+				return f.failf("flag provided but not defined: --%s", name)
+			}
+			flag = m[name]
+		} else {
+			shortcuts := s[1:]
+			for i := 0; i < len(shortcuts); i++ {
+				c := shortcuts[i]
+				_, alreadythere := f.shortcuts[c]
+				if !alreadythere {
+					if c == 'h' { // special case for nice help message.
+						f.usage()
+						return ErrHelp
+					}
+					return f.failf("flag provided but not defined: %q in -%s", c, shortcuts)
+				}
+				flag = f.shortcuts[c]
+				if i == len(shortcuts) - 1 {
+					break
+				}
+				if shortcuts[i+1] == '=' {
+					value = shortcuts[i+2:]
+					has_value = true
+					break
+				}
+				if fv, ok := flag.Value.(*boolValue); ok {
+					fv.Set("true")
+				} else {
+					return f.failf("non-boolean flag %q in shortcut flag -%s", c, shortcuts)
+				}
+			}
 		}
-	}
-	m := f.formal
-	flag, alreadythere := m[name] // BUG
-	if !alreadythere {
-		if name == "help" || name == "h" { // special case for nice help message.
-			f.usage()
-			return false, ErrHelp
-		}
-		return false, f.failf("flag provided but not defined: -%s", name)
-	}
-	if fv, ok := flag.Value.(*boolValue); ok { // special case: doesn't need an arg
-		if has_value {
-			if err := fv.Set(value); err != nil {
-				f.failf("invalid boolean value %q for  -%s: %v", value, name, err)
+
+		// we have a flag, possibly with included =value argument
+		if fv, ok := flag.Value.(*boolValue); ok { // special case: doesn't need an arg
+			if has_value {
+				if err := fv.Set(value); err != nil {
+					f.failf("invalid boolean value %q for %s: %v", value, s, err)
+				}
+			} else {
+				fv.Set("true")
 			}
 		} else {
-			fv.Set("true")
+			// It must have a value, which might be the next argument.
+			if !has_value && len(args) > 0 {
+				// value is the next arg
+				has_value = true
+				value = args[0]
+				args = args[1:]
+			}
+			if !has_value {
+				return f.failf("flag needs an argument: %s", s)
+			}
+			if err := flag.Value.Set(value); err != nil {
+				return f.failf("invalid value %q for %s: %v", value, s, err)
+			}
 		}
-	} else {
-		// It must have a value, which might be the next argument.
-		if !has_value && len(f.args) > 0 {
-			// value is the next arg
-			has_value = true
-			value, f.args = f.args[0], f.args[1:]
+		/*if f.actual == nil {
+			f.actual = make(map[string]*Flag)
 		}
-		if !has_value {
-			return false, f.failf("flag needs an argument: -%s", name)
-		}
-		if err := flag.Value.Set(value); err != nil {
-			return false, f.failf("invalid value %q for flag -%s: %v", value, name, err)
-		}
+		f.actual[name] = flag*/ // TODO: mark flags as set in robust way
 	}
-	if f.actual == nil {
-		f.actual = make(map[string]*Flag)
-	}
-	f.actual[name] = flag
-	return true, nil
+	return nil
 }
 
 // Parse parses flag definitions from the argument list, which should not
@@ -919,15 +967,9 @@ func (f *FlagSet) parseOne() (bool, error) {
 // The return value will be ErrHelp if -help was set but not defined.
 func (f *FlagSet) Parse(arguments []string) error {
 	f.parsed = true
-	f.args = arguments
-	for {
-		seen, err := f.parseOne()
-		if seen {
-			continue
-		}
-		if err == nil {
-			break
-		}
+	f.args = make([]string, len(arguments))
+	err := f.parseArgs(arguments)
+	if err != nil {
 		switch f.errorHandling {
 		case ContinueOnError:
 			return err
