@@ -960,10 +960,10 @@ func (f *FlagSet) parseArgs(args []string) error {
 				return f.failf("invalid value %q for %s: %v", value, s, err)
 			}
 		}
-		/*if f.actual == nil {
+		if f.actual == nil {
 			f.actual = make(map[string]*Flag)
 		}
-		f.actual[name] = flag*/ // TODO: mark flags as set in robust way
+		f.actual[flag.Name] = flag
 	}
 	return nil
 }
