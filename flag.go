@@ -929,7 +929,9 @@ func (f *FlagSet) parseArgs(args []string) error {
 				if fv, ok := flag.Value.(*boolValue); ok {
 					fv.Set("true")
 				} else {
-					return f.failf("non-boolean flag %q in shortcut flag -%s", c, shortcuts)
+					value = shortcuts[i+1:]
+					has_value = true
+					break
 				}
 			}
 		}
