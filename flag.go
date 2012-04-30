@@ -974,7 +974,7 @@ func (f *FlagSet) parseArgs(args []string) error {
 // The return value will be ErrHelp if -help was set but not defined.
 func (f *FlagSet) Parse(arguments []string) error {
 	f.parsed = true
-	f.args = make([]string, len(arguments))
+	f.args = make([]string, 0, len(arguments))
 	err := f.parseArgs(arguments)
 	if err != nil {
 		switch f.errorHandling {
