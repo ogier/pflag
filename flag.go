@@ -12,7 +12,7 @@
 	functionality of the flag package functions identically from a
 	developer's standpoint with one exception:
 
-	* There is an additional string field "Shortcut" in the Flag struct.
+	* There is an additional string field "Shorthand" in the Flag struct.
 	Most code never instantiates this struct directly, instead using the
 	flag.String(), Bool(), Int(), etc. functions, and is therefore
 	unaffected.
@@ -45,7 +45,7 @@
 	The arguments are indexed from 0 up to flag.NArg().
 
 	The pflag package also defines some new functions that are not in flag,
-	that give one-letter shortcuts for flags. You can use these by appending
+	that give one-letter shorthands for flags. You can use these by appending
 	'P' to the name of any function that defines a flag.
 		var ip = flag.IntP("flagname", "f", 1234, "help message")
 		var flagvar bool
@@ -53,8 +53,8 @@
 			flag.BoolVarP("boolname", "b", true, "help message")
 		}
 		flag.VarP(&flagVar, "varname", "v", 1234, "help message")
-	Shortcut letters can be used with single dashes on the command line.
-	Boolean shortcut flags can be combined with other shortcut flags.
+	Shorthand letters can be used with single dashes on the command line.
+	Boolean shorthand flags can be combined with other shorthand flags.
 
 	Command line flag syntax:
 		--flag    // boolean flags only
@@ -67,8 +67,8 @@
 	use the --flag=false form to turn off a boolean flag.
 
 	Unlike the flag package, a single dash before an option means something
-	different than a double dash. Single dashes signify a series of shortcut
-	letters for flags. All but the last shortcut letter must be boolean flags.
+	different than a double dash. Single dashes signify a series of shorthand
+	letters for flags. All but the last shorthand letter must be boolean flags.
 		-f          // f must be boolean
 		-abc        // all flags must be boolean
 		-abcn=1234
@@ -260,7 +260,7 @@ type FlagSet struct {
 	parsed        bool
 	actual        map[string]*Flag
 	formal        map[string]*Flag
-	shortcuts     map[byte]*Flag
+	shorthands    map[byte]*Flag
 	args          []string // arguments after flags
 	exitOnError   bool     // does the program exit if there's an error?
 	errorHandling ErrorHandling
@@ -269,11 +269,11 @@ type FlagSet struct {
 
 // A Flag represents the state of a flag.
 type Flag struct {
-	Name     string // name as it appears on command line
-	Shortcut string // one-letter abbreviated flag
-	Usage    string // help message
-	Value    Value  // value as set
-	DefValue string // default value (as text); for usage message
+	Name      string // name as it appears on command line
+	Shorthand string // one-letter abbreviated flag
+	Usage     string // help message
+	Value     Value  // value as set
+	DefValue  string // default value (as text); for usage message
 }
 
 // sortFlags returns the flags as a slice in lexicographical sorted order.
@@ -375,12 +375,12 @@ func (f *FlagSet) PrintDefaults() {
 			// put quotes on the value
 			format = "--%s=%q: %s\n"
 		}
-		if len(flag.Shortcut) > 0 {
+		if len(flag.Shorthand) > 0 {
 			format = "  -%s, " + format
 		} else {
 			format = "   %s   " + format
 		}
-		fmt.Fprintf(f.out(), format, flag.Shortcut, flag.Name, flag.DefValue, flag.Usage)
+		fmt.Fprintf(f.out(), format, flag.Shorthand, flag.Name, flag.DefValue, flag.Usage)
 	})
 }
 
@@ -445,9 +445,9 @@ func (f *FlagSet) BoolVar(p *bool, name string, value bool, usage string) {
 	f.VarP(newBoolValue(value, p), name, "", usage)
 }
 
-// Like BoolVar, but accepts a shortcut letter that can be used after a single dash.
-func (f *FlagSet) BoolVarP(p *bool, name, shortcut string, value bool, usage string) {
-	f.VarP(newBoolValue(value, p), name, shortcut, usage)
+// Like BoolVar, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) BoolVarP(p *bool, name, shorthand string, value bool, usage string) {
+	f.VarP(newBoolValue(value, p), name, shorthand, usage)
 }
 
 // BoolVar defines a bool flag with specified name, default value, and usage string.
@@ -456,9 +456,9 @@ func BoolVar(p *bool, name string, value bool, usage string) {
 	commandLine.VarP(newBoolValue(value, p), name, "", usage)
 }
 
-// Like BoolVar, but accepts a shortcut letter that can be used after a single dash.
-func BoolVarP(p *bool, name, shortcut string, value bool, usage string) {
-	commandLine.VarP(newBoolValue(value, p), name, shortcut, usage)
+// Like BoolVar, but accepts a shorthand letter that can be used after a single dash.
+func BoolVarP(p *bool, name, shorthand string, value bool, usage string) {
+	commandLine.VarP(newBoolValue(value, p), name, shorthand, usage)
 }
 
 // Bool defines a bool flag with specified name, default value, and usage string.
@@ -469,10 +469,10 @@ func (f *FlagSet) Bool(name string, value bool, usage string) *bool {
 	return p
 }
 
-// Like Bool, but accepts a shortcut letter that can be used after a single dash.
-func (f *FlagSet) BoolP(name, shortcut string, value bool, usage string) *bool {
+// Like Bool, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) BoolP(name, shorthand string, value bool, usage string) *bool {
 	p := new(bool)
-	f.BoolVarP(p, name, shortcut, value, usage)
+	f.BoolVarP(p, name, shorthand, value, usage)
 	return p
 }
 
@@ -482,9 +482,9 @@ func Bool(name string, value bool, usage string) *bool {
 	return commandLine.BoolP(name, "", value, usage)
 }
 
-// Like Bool, but accepts a shortcut letter that can be used after a single dash.
-func BoolP(name, shortcut string, value bool, usage string) *bool {
-	return commandLine.BoolP(name, shortcut, value, usage)
+// Like Bool, but accepts a shorthand letter that can be used after a single dash.
+func BoolP(name, shorthand string, value bool, usage string) *bool {
+	return commandLine.BoolP(name, shorthand, value, usage)
 }
 
 // IntVar defines an int flag with specified name, default value, and usage string.
@@ -493,9 +493,9 @@ func (f *FlagSet) IntVar(p *int, name string, value int, usage string) {
 	f.VarP(newIntValue(value, p), name, "", usage)
 }
 
-// Like IntVar, but accepts a shortcut letter that can be used after a single dash.
-func (f *FlagSet) IntVarP(p *int, name, shortcut string, value int, usage string) {
-	f.VarP(newIntValue(value, p), name, shortcut, usage)
+// Like IntVar, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) IntVarP(p *int, name, shorthand string, value int, usage string) {
+	f.VarP(newIntValue(value, p), name, shorthand, usage)
 }
 
 // IntVar defines an int flag with specified name, default value, and usage string.
@@ -504,9 +504,9 @@ func IntVar(p *int, name string, value int, usage string) {
 	commandLine.VarP(newIntValue(value, p), name, "", usage)
 }
 
-// Like IntVar, but accepts a shortcut letter that can be used after a single dash.
-func IntVarP(p *int, name, shortcut string, value int, usage string) {
-	commandLine.VarP(newIntValue(value, p), name, shortcut, usage)
+// Like IntVar, but accepts a shorthand letter that can be used after a single dash.
+func IntVarP(p *int, name, shorthand string, value int, usage string) {
+	commandLine.VarP(newIntValue(value, p), name, shorthand, usage)
 }
 
 // Int defines an int flag with specified name, default value, and usage string.
@@ -517,10 +517,10 @@ func (f *FlagSet) Int(name string, value int, usage string) *int {
 	return p
 }
 
-// Like Int, but accepts a shortcut letter that can be used after a single dash.
-func (f *FlagSet) IntP(name, shortcut string, value int, usage string) *int {
+// Like Int, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) IntP(name, shorthand string, value int, usage string) *int {
 	p := new(int)
-	f.IntVarP(p, name, shortcut, value, usage)
+	f.IntVarP(p, name, shorthand, value, usage)
 	return p
 }
 
@@ -530,9 +530,9 @@ func Int(name string, value int, usage string) *int {
 	return commandLine.IntP(name, "", value, usage)
 }
 
-// Like Int, but accepts a shortcut letter that can be used after a single dash.
-func IntP(name, shortcut string, value int, usage string) *int {
-	return commandLine.IntP(name, shortcut, value, usage)
+// Like Int, but accepts a shorthand letter that can be used after a single dash.
+func IntP(name, shorthand string, value int, usage string) *int {
+	return commandLine.IntP(name, shorthand, value, usage)
 }
 
 // Int64Var defines an int64 flag with specified name, default value, and usage string.
@@ -541,9 +541,9 @@ func (f *FlagSet) Int64Var(p *int64, name string, value int64, usage string) {
 	f.VarP(newInt64Value(value, p), name, "", usage)
 }
 
-// Like Int64Var, but accepts a shortcut letter that can be used after a single dash.
-func (f *FlagSet) Int64VarP(p *int64, name, shortcut string, value int64, usage string) {
-	f.VarP(newInt64Value(value, p), name, shortcut, usage)
+// Like Int64Var, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) Int64VarP(p *int64, name, shorthand string, value int64, usage string) {
+	f.VarP(newInt64Value(value, p), name, shorthand, usage)
 }
 
 // Int64Var defines an int64 flag with specified name, default value, and usage string.
@@ -552,9 +552,9 @@ func Int64Var(p *int64, name string, value int64, usage string) {
 	commandLine.VarP(newInt64Value(value, p), name, "", usage)
 }
 
-// Like Int64Var, but accepts a shortcut letter that can be used after a single dash.
-func Int64VarP(p *int64, name, shortcut string, value int64, usage string) {
-	commandLine.VarP(newInt64Value(value, p), name, shortcut, usage)
+// Like Int64Var, but accepts a shorthand letter that can be used after a single dash.
+func Int64VarP(p *int64, name, shorthand string, value int64, usage string) {
+	commandLine.VarP(newInt64Value(value, p), name, shorthand, usage)
 }
 
 // Int64 defines an int64 flag with specified name, default value, and usage string.
@@ -565,10 +565,10 @@ func (f *FlagSet) Int64(name string, value int64, usage string) *int64 {
 	return p
 }
 
-// Like Int64, but accepts a shortcut letter that can be used after a single dash.
-func (f *FlagSet) Int64P(name, shortcut string, value int64, usage string) *int64 {
+// Like Int64, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) Int64P(name, shorthand string, value int64, usage string) *int64 {
 	p := new(int64)
-	f.Int64VarP(p, name, shortcut, value, usage)
+	f.Int64VarP(p, name, shorthand, value, usage)
 	return p
 }
 
@@ -578,9 +578,9 @@ func Int64(name string, value int64, usage string) *int64 {
 	return commandLine.Int64P(name, "", value, usage)
 }
 
-// Like Int64, but accepts a shortcut letter that can be used after a single dash.
-func Int64P(name, shortcut string, value int64, usage string) *int64 {
-	return commandLine.Int64P(name, shortcut, value, usage)
+// Like Int64, but accepts a shorthand letter that can be used after a single dash.
+func Int64P(name, shorthand string, value int64, usage string) *int64 {
+	return commandLine.Int64P(name, shorthand, value, usage)
 }
 
 // UintVar defines a uint flag with specified name, default value, and usage string.
@@ -589,9 +589,9 @@ func (f *FlagSet) UintVar(p *uint, name string, value uint, usage string) {
 	f.VarP(newUintValue(value, p), name, "", usage)
 }
 
-// Like UintVar, but accepts a shortcut letter that can be used after a single dash.
-func (f *FlagSet) UintVarP(p *uint, name, shortcut string, value uint, usage string) {
-	f.VarP(newUintValue(value, p), name, shortcut, usage)
+// Like UintVar, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) UintVarP(p *uint, name, shorthand string, value uint, usage string) {
+	f.VarP(newUintValue(value, p), name, shorthand, usage)
 }
 
 // UintVar defines a uint flag with specified name, default value, and usage string.
@@ -600,9 +600,9 @@ func UintVar(p *uint, name string, value uint, usage string) {
 	commandLine.VarP(newUintValue(value, p), name, "", usage)
 }
 
-// Like UintVar, but accepts a shortcut letter that can be used after a single dash.
-func UintVarP(p *uint, name, shortcut string, value uint, usage string) {
-	commandLine.VarP(newUintValue(value, p), name, shortcut, usage)
+// Like UintVar, but accepts a shorthand letter that can be used after a single dash.
+func UintVarP(p *uint, name, shorthand string, value uint, usage string) {
+	commandLine.VarP(newUintValue(value, p), name, shorthand, usage)
 }
 
 // Uint defines a uint flag with specified name, default value, and usage string.
@@ -613,10 +613,10 @@ func (f *FlagSet) Uint(name string, value uint, usage string) *uint {
 	return p
 }
 
-// Like Uint, but accepts a shortcut letter that can be used after a single dash.
-func (f *FlagSet) UintP(name, shortcut string, value uint, usage string) *uint {
+// Like Uint, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) UintP(name, shorthand string, value uint, usage string) *uint {
 	p := new(uint)
-	f.UintVarP(p, name, shortcut, value, usage)
+	f.UintVarP(p, name, shorthand, value, usage)
 	return p
 }
 
@@ -626,9 +626,9 @@ func Uint(name string, value uint, usage string) *uint {
 	return commandLine.UintP(name, "", value, usage)
 }
 
-// Like Uint, but accepts a shortcut letter that can be used after a single dash.
-func UintP(name, shortcut string, value uint, usage string) *uint {
-	return commandLine.UintP(name, shortcut, value, usage)
+// Like Uint, but accepts a shorthand letter that can be used after a single dash.
+func UintP(name, shorthand string, value uint, usage string) *uint {
+	return commandLine.UintP(name, shorthand, value, usage)
 }
 
 // Uint64Var defines a uint64 flag with specified name, default value, and usage string.
@@ -637,9 +637,9 @@ func (f *FlagSet) Uint64Var(p *uint64, name string, value uint64, usage string) 
 	f.VarP(newUint64Value(value, p), name, "", usage)
 }
 
-// Like Uint64Var, but accepts a shortcut letter that can be used after a single dash.
-func (f *FlagSet) Uint64VarP(p *uint64, name, shortcut string, value uint64, usage string) {
-	f.VarP(newUint64Value(value, p), name, shortcut, usage)
+// Like Uint64Var, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) Uint64VarP(p *uint64, name, shorthand string, value uint64, usage string) {
+	f.VarP(newUint64Value(value, p), name, shorthand, usage)
 }
 
 // Uint64Var defines a uint64 flag with specified name, default value, and usage string.
@@ -648,9 +648,9 @@ func Uint64Var(p *uint64, name string, value uint64, usage string) {
 	commandLine.VarP(newUint64Value(value, p), name, "", usage)
 }
 
-// Like Uint64Var, but accepts a shortcut letter that can be used after a single dash.
-func Uint64VarP(p *uint64, name, shortcut string, value uint64, usage string) {
-	commandLine.VarP(newUint64Value(value, p), name, shortcut, usage)
+// Like Uint64Var, but accepts a shorthand letter that can be used after a single dash.
+func Uint64VarP(p *uint64, name, shorthand string, value uint64, usage string) {
+	commandLine.VarP(newUint64Value(value, p), name, shorthand, usage)
 }
 
 // Uint64 defines a uint64 flag with specified name, default value, and usage string.
@@ -661,10 +661,10 @@ func (f *FlagSet) Uint64(name string, value uint64, usage string) *uint64 {
 	return p
 }
 
-// Like Uint64, but accepts a shortcut letter that can be used after a single dash.
-func (f *FlagSet) Uint64P(name, shortcut string, value uint64, usage string) *uint64 {
+// Like Uint64, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) Uint64P(name, shorthand string, value uint64, usage string) *uint64 {
 	p := new(uint64)
-	f.Uint64VarP(p, name, shortcut, value, usage)
+	f.Uint64VarP(p, name, shorthand, value, usage)
 	return p
 }
 
@@ -674,9 +674,9 @@ func Uint64(name string, value uint64, usage string) *uint64 {
 	return commandLine.Uint64P(name, "", value, usage)
 }
 
-// Like Uint64, but accepts a shortcut letter that can be used after a single dash.
-func Uint64P(name, shortcut string, value uint64, usage string) *uint64 {
-	return commandLine.Uint64P(name, shortcut, value, usage)
+// Like Uint64, but accepts a shorthand letter that can be used after a single dash.
+func Uint64P(name, shorthand string, value uint64, usage string) *uint64 {
+	return commandLine.Uint64P(name, shorthand, value, usage)
 }
 
 // StringVar defines a string flag with specified name, default value, and usage string.
@@ -685,9 +685,9 @@ func (f *FlagSet) StringVar(p *string, name string, value string, usage string) 
 	f.VarP(newStringValue(value, p), name, "", usage)
 }
 
-// Like StringVar, but accepts a shortcut letter that can be used after a single dash.
-func (f *FlagSet) StringVarP(p *string, name, shortcut string, value string, usage string) {
-	f.VarP(newStringValue(value, p), name, shortcut, usage)
+// Like StringVar, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) StringVarP(p *string, name, shorthand string, value string, usage string) {
+	f.VarP(newStringValue(value, p), name, shorthand, usage)
 }
 
 // StringVar defines a string flag with specified name, default value, and usage string.
@@ -696,9 +696,9 @@ func StringVar(p *string, name string, value string, usage string) {
 	commandLine.VarP(newStringValue(value, p), name, "", usage)
 }
 
-// Like StringVar, but accepts a shortcut letter that can be used after a single dash.
-func StringVarP(p *string, name, shortcut string, value string, usage string) {
-	commandLine.VarP(newStringValue(value, p), name, shortcut, usage)
+// Like StringVar, but accepts a shorthand letter that can be used after a single dash.
+func StringVarP(p *string, name, shorthand string, value string, usage string) {
+	commandLine.VarP(newStringValue(value, p), name, shorthand, usage)
 }
 
 // String defines a string flag with specified name, default value, and usage string.
@@ -709,10 +709,10 @@ func (f *FlagSet) String(name string, value string, usage string) *string {
 	return p
 }
 
-// Like String, but accepts a shortcut letter that can be used after a single dash.
-func (f *FlagSet) StringP(name, shortcut string, value string, usage string) *string {
+// Like String, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) StringP(name, shorthand string, value string, usage string) *string {
 	p := new(string)
-	f.StringVarP(p, name, shortcut, value, usage)
+	f.StringVarP(p, name, shorthand, value, usage)
 	return p
 }
 
@@ -722,9 +722,9 @@ func String(name string, value string, usage string) *string {
 	return commandLine.StringP(name, "", value, usage)
 }
 
-// Like String, but accepts a shortcut letter that can be used after a single dash.
-func StringP(name, shortcut string, value string, usage string) *string {
-	return commandLine.StringP(name, shortcut, value, usage)
+// Like String, but accepts a shorthand letter that can be used after a single dash.
+func StringP(name, shorthand string, value string, usage string) *string {
+	return commandLine.StringP(name, shorthand, value, usage)
 }
 
 // Float64Var defines a float64 flag with specified name, default value, and usage string.
@@ -733,9 +733,9 @@ func (f *FlagSet) Float64Var(p *float64, name string, value float64, usage strin
 	f.VarP(newFloat64Value(value, p), name, "", usage)
 }
 
-// Like Float64Var, but accepts a shortcut letter that can be used after a single dash.
-func (f *FlagSet) Float64VarP(p *float64, name, shortcut string, value float64, usage string) {
-	f.VarP(newFloat64Value(value, p), name, shortcut, usage)
+// Like Float64Var, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) Float64VarP(p *float64, name, shorthand string, value float64, usage string) {
+	f.VarP(newFloat64Value(value, p), name, shorthand, usage)
 }
 
 // Float64Var defines a float64 flag with specified name, default value, and usage string.
@@ -744,9 +744,9 @@ func Float64Var(p *float64, name string, value float64, usage string) {
 	commandLine.VarP(newFloat64Value(value, p), name, "", usage)
 }
 
-// Like Float64Var, but accepts a shortcut letter that can be used after a single dash.
-func Float64VarP(p *float64, name, shortcut string, value float64, usage string) {
-	commandLine.VarP(newFloat64Value(value, p), name, shortcut, usage)
+// Like Float64Var, but accepts a shorthand letter that can be used after a single dash.
+func Float64VarP(p *float64, name, shorthand string, value float64, usage string) {
+	commandLine.VarP(newFloat64Value(value, p), name, shorthand, usage)
 }
 
 // Float64 defines a float64 flag with specified name, default value, and usage string.
@@ -757,10 +757,10 @@ func (f *FlagSet) Float64(name string, value float64, usage string) *float64 {
 	return p
 }
 
-// Like Float64, but accepts a shortcut letter that can be used after a single dash.
-func (f *FlagSet) Float64P(name, shortcut string, value float64, usage string) *float64 {
+// Like Float64, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) Float64P(name, shorthand string, value float64, usage string) *float64 {
 	p := new(float64)
-	f.Float64VarP(p, name, shortcut, value, usage)
+	f.Float64VarP(p, name, shorthand, value, usage)
 	return p
 }
 
@@ -770,9 +770,9 @@ func Float64(name string, value float64, usage string) *float64 {
 	return commandLine.Float64P(name, "", value, usage)
 }
 
-// Like Float64, but accepts a shortcut letter that can be used after a single dash.
-func Float64P(name, shortcut string, value float64, usage string) *float64 {
-	return commandLine.Float64P(name, shortcut, value, usage)
+// Like Float64, but accepts a shorthand letter that can be used after a single dash.
+func Float64P(name, shorthand string, value float64, usage string) *float64 {
+	return commandLine.Float64P(name, shorthand, value, usage)
 }
 
 // DurationVar defines a time.Duration flag with specified name, default value, and usage string.
@@ -781,9 +781,9 @@ func (f *FlagSet) DurationVar(p *time.Duration, name string, value time.Duration
 	f.VarP(newDurationValue(value, p), name, "", usage)
 }
 
-// Like DurationVar, but accepts a shortcut letter that can be used after a single dash.
-func (f *FlagSet) DurationVarP(p *time.Duration, name, shortcut string, value time.Duration, usage string) {
-	f.VarP(newDurationValue(value, p), name, shortcut, usage)
+// Like DurationVar, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) DurationVarP(p *time.Duration, name, shorthand string, value time.Duration, usage string) {
+	f.VarP(newDurationValue(value, p), name, shorthand, usage)
 }
 
 // DurationVar defines a time.Duration flag with specified name, default value, and usage string.
@@ -792,9 +792,9 @@ func DurationVar(p *time.Duration, name string, value time.Duration, usage strin
 	commandLine.VarP(newDurationValue(value, p), name, "", usage)
 }
 
-// Like DurationVar, but accepts a shortcut letter that can be used after a single dash.
-func DurationVarP(p *time.Duration, name, shortcut string, value time.Duration, usage string) {
-	commandLine.VarP(newDurationValue(value, p), name, shortcut, usage)
+// Like DurationVar, but accepts a shorthand letter that can be used after a single dash.
+func DurationVarP(p *time.Duration, name, shorthand string, value time.Duration, usage string) {
+	commandLine.VarP(newDurationValue(value, p), name, shorthand, usage)
 }
 
 // Duration defines a time.Duration flag with specified name, default value, and usage string.
@@ -805,10 +805,10 @@ func (f *FlagSet) Duration(name string, value time.Duration, usage string) *time
 	return p
 }
 
-// Like Duration, but accepts a shortcut letter that can be used after a single dash.
-func (f *FlagSet) DurationP(name, shortcut string, value time.Duration, usage string) *time.Duration {
+// Like Duration, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) DurationP(name, shorthand string, value time.Duration, usage string) *time.Duration {
 	p := new(time.Duration)
-	f.DurationVarP(p, name, shortcut, value, usage)
+	f.DurationVarP(p, name, shorthand, value, usage)
 	return p
 }
 
@@ -818,9 +818,9 @@ func Duration(name string, value time.Duration, usage string) *time.Duration {
 	return commandLine.DurationP(name, "", value, usage)
 }
 
-// Like Duration, but accepts a shortcut letter that can be used after a single dash.
-func DurationP(name, shortcut string, value time.Duration, usage string) *time.Duration {
-	return commandLine.DurationP(name, shortcut, value, usage)
+// Like Duration, but accepts a shorthand letter that can be used after a single dash.
+func DurationP(name, shorthand string, value time.Duration, usage string) *time.Duration {
+	return commandLine.DurationP(name, shorthand, value, usage)
 }
 
 // Var defines a flag with the specified name and usage string. The type and
@@ -833,10 +833,10 @@ func (f *FlagSet) Var(value Value, name string, usage string) {
 	f.VarP(value, name, "", usage)
 }
 
-// Like Var, but accepts a shortcut letter that can be used after a single dash.
-func (f *FlagSet) VarP(value Value, name, shortcut, usage string) {
+// Like Var, but accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
 	// Remember the default value as a string; it won't change.
-	flag := &Flag{name, shortcut, usage, value, value.String()}
+	flag := &Flag{name, shorthand, usage, value, value.String()}
 	_, alreadythere := f.formal[name]
 	if alreadythere {
 		fmt.Fprintf(f.out(), "%s flag redefined: %s\n", f.name, name)
@@ -847,23 +847,23 @@ func (f *FlagSet) VarP(value Value, name, shortcut, usage string) {
 	}
 	f.formal[name] = flag
 
-	if len(shortcut) == 0 {
+	if len(shorthand) == 0 {
 		return
 	}
-	if len(shortcut) > 1 {
-		fmt.Fprintf(f.out(), "%s shortcut more than ASCII character: %s\n", f.name, shortcut)
-		panic("shortcut is more than one character")
+	if len(shorthand) > 1 {
+		fmt.Fprintf(f.out(), "%s shorthand more than ASCII character: %s\n", f.name, shorthand)
+		panic("shorthand is more than one character")
 	}
-	if f.shortcuts == nil {
-		f.shortcuts = make(map[byte]*Flag)
+	if f.shorthands == nil {
+		f.shorthands = make(map[byte]*Flag)
 	}
-	c := shortcut[0]
-	old, alreadythere := f.shortcuts[c]
+	c := shorthand[0]
+	old, alreadythere := f.shorthands[c]
 	if alreadythere {
-		fmt.Fprintf(f.out(), "%s shortcut reused: %q for %s and %s\n", f.name, c, name, old.Name)
-		panic("shortcut redefinition")
+		fmt.Fprintf(f.out(), "%s shorthand reused: %q for %s and %s\n", f.name, c, name, old.Name)
+		panic("shorthand redefinition")
 	}
-	f.shortcuts[c] = flag
+	f.shorthands[c] = flag
 }
 
 
@@ -939,30 +939,30 @@ func (f *FlagSet) parseArgs(args []string) error {
 			}
 			flag = m[name]
 		} else {
-			shortcuts := s[1:]
-			for i := 0; i < len(shortcuts); i++ {
-				c := shortcuts[i]
-				_, alreadythere := f.shortcuts[c]
+			shorthands := s[1:]
+			for i := 0; i < len(shorthands); i++ {
+				c := shorthands[i]
+				_, alreadythere := f.shorthands[c]
 				if !alreadythere {
 					if c == 'h' { // special case for nice help message.
 						f.usage()
 						return ErrHelp
 					}
-					return f.failf("unknown short flag: %q in -%s", c, shortcuts)
+					return f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
 				}
-				flag = f.shortcuts[c]
-				if i == len(shortcuts) - 1 {
+				flag = f.shorthands[c]
+				if i == len(shorthands) - 1 {
 					break
 				}
-				if shortcuts[i+1] == '=' {
-					value = shortcuts[i+2:]
+				if shorthands[i+1] == '=' {
+					value = shorthands[i+2:]
 					has_value = true
 					break
 				}
 				if fv, ok := flag.Value.(*boolValue); ok {
 					fv.Set("true")
 				} else {
-					value = shortcuts[i+1:]
+					value = shorthands[i+1:]
 					has_value = true
 					break
 				}
