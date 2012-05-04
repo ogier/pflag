@@ -6,13 +6,14 @@ package pflag_test
 
 import (
 	"bytes"
-	. "pflag"
 	"fmt"
 	"os"
 	"sort"
 	"strings"
 	"testing"
 	"time"
+
+	. "github.com/ogier/pflag"
 )
 
 var (
