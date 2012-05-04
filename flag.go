@@ -368,15 +368,15 @@ func Set(name, value string) error {
 // otherwise, the default values of all defined flags in the set.
 func (f *FlagSet) PrintDefaults() {
 	f.VisitAll(func(flag *Flag) {
-		format := "  --%s=%s: %s\n"
+		format := "--%s=%s: %s\n"
 		if _, ok := flag.Value.(*stringValue); ok {
 			// put quotes on the value
-			format = "  --%s=%q: %s\n"
+			format = "--%s=%q: %s\n"
 		}
 		if len(flag.Shortcut) > 0 {
-			format = "  -%s," + format[1:]
+			format = "  -%s, " + format
 		} else {
-			format = "%s" + format
+			format = "   %s   " + format
 		}
 		fmt.Fprintf(f.out(), format, flag.Shortcut, flag.Name, flag.DefValue, flag.Usage)
 	})
