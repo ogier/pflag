@@ -8,18 +8,23 @@
 
 	Usage:
 
-	See the documentation of the flag package. All of the existing
-	functionality of the flag package functions identically from a
-	developer's standpoint with one exception:
+	pflag is compatible with the GNU extensions to the POSIX recommendations
+	for command-line options. See
+	http://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
 
-	* There is an additional string field "Shorthand" in the Flag struct.
-	Most code never instantiates this struct directly, instead using the
-	flag.String(), Bool(), Int(), etc. functions, and is therefore
+	pflag is a drop-in replacement of Go's native flag package. If you import
+	pflag under the name "flag" then all code should continue to function
+	with no changes.
+
+		import flag "github.com/ogier/pflag"
+
+	There is one exception to this: if you directly instantiate the Flag struct
+	there is one more field "Shorthand" that you will need to set.
+	Most code never instantiates this struct directly, and instead uses
+	functions such as String(), BoolVar(), and Var(), and is therefore
 	unaffected.
 
-	Import the pflag package under the name "flag" and all existing code
-	should continue to work with no changes.
-		import flag "pflag"
+	Define flags using flag.String(), Bool(), Int(), etc. Example:
 		var ip *int = flag.Int("flagname", 1234, "help message for flagname")
 	If you like, you can bind the flag to a variable using the Var() functions.
 		var flagvar int
