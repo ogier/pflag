@@ -96,7 +96,7 @@ func TestEverything(t *testing.T) {
 func TestUsage(t *testing.T) {
 	called := false
 	ResetForTesting(func() { called = true })
-	if CommandLine().Parse([]string{"-x"}) == nil {
+	if CommandLine().Parse([]string{"--x"}) == nil {
 		t.Error("parse did not fail for unknown flag")
 	}
 	if !called {
@@ -119,15 +119,15 @@ func testParse(f *FlagSet, t *testing.T) {
 	durationFlag := f.Duration("duration", 5*time.Second, "time.Duration value")
 	extra := "one-extra-argument"
 	args := []string{
-		"-bool",
-		"-bool2=true",
+		"--bool",
+		"--bool2=true",
 		"--int", "22",
 		"--int64", "0x23",
-		"-uint", "24",
+		"--uint", "24",
 		"--uint64", "25",
-		"-string", "hello",
-		"-float64", "2718e28",
-		"-duration", "2m",
+		"--string", "hello",
+		"--float64", "2718e28",
+		"--duration", "2m",
 		extra,
 	}
 	if err := f.Parse(args); err != nil {
@@ -196,7 +196,7 @@ func TestUserDefined(t *testing.T) {
 	flags.Init("test", ContinueOnError)
 	var v flagVar
 	flags.Var(&v, "v", "usage")
-	if err := flags.Parse([]string{"-v", "1", "-v", "2", "-v=3"}); err != nil {
+	if err := flags.Parse([]string{"--v", "1", "--v", "2", "--v=3"}); err != nil {
 		t.Error(err)
 	}
 	if len(v) != 3 {
@@ -213,8 +213,8 @@ func TestSetOutput(t *testing.T) {
 	var buf bytes.Buffer
 	flags.SetOutput(&buf)
 	flags.Init("test", ContinueOnError)
-	flags.Parse([]string{"-unknown"})
-	if out := buf.String(); !strings.Contains(out, "-unknown") {
+	flags.Parse([]string{"--unknown"})
+	if out := buf.String(); !strings.Contains(out, "--unknown") {
 		t.Logf("expected output mentioning unknown; got %q", out)
 	}
 }
@@ -222,10 +222,10 @@ func TestSetOutput(t *testing.T) {
 // This tests that one can reset the flags. This still works but not well, and is
 // superseded by FlagSet.
 func TestChangingArgs(t *testing.T) {
-	ResetForTesting(func() { t.Fatal("bad parse") })
+	ResetForTesting(func() { panic("ouch") })//t.Fatal("bad parse") })
 	oldArgs := os.Args
 	defer func() { os.Args = oldArgs }()
-	os.Args = []string{"cmd", "-before", "subcmd", "-after", "args"}
+	os.Args = []string{"cmd", "--before", "subcmd", "--after", "args"}
 	before := Bool("before", false, "")
 	if err := CommandLine().Parse(os.Args[1:]); err != nil {
 		t.Fatal(err)
@@ -249,19 +249,19 @@ func TestHelp(t *testing.T) {
 	var flag bool
 	fs.BoolVar(&flag, "flag", false, "regular flag")
 	// Regular flag invocation should work
-	err := fs.Parse([]string{"-flag=true"})
+	err := fs.Parse([]string{"--flag=true"})
 	if err != nil {
 		t.Fatal("expected no error; got ", err)
 	}
 	if !flag {
-		t.Error("flag was not set by -flag")
+		t.Error("flag was not set by --flag")
 	}
 	if helpCalled {
 		t.Error("help called for regular flag")
 		helpCalled = false // reset for next test
 	}
 	// Help flag should work as expected.
-	err = fs.Parse([]string{"-help"})
+	err = fs.Parse([]string{"--help"})
 	if err == nil {
 		t.Fatal("error expected")
 	}
@@ -275,9 +275,9 @@ func TestHelp(t *testing.T) {
 	var help bool
 	fs.BoolVar(&help, "help", false, "help flag")
 	helpCalled = false
-	err = fs.Parse([]string{"-help"})
+	err = fs.Parse([]string{"--help"})
 	if err != nil {
-		t.Fatal("expected no error for defined -help; got ", err)
+		t.Fatal("expected no error for defined --help; got ", err)
 	}
 	if helpCalled {
 		t.Fatal("help was called; should not have been for defined help flag")
