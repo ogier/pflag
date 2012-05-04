@@ -73,6 +73,8 @@
 		-abc        // all flags must be boolean
 		-abcn=1234
 		-abcn 1234  // n must be non-boolean
+		-abcn1234   // n must be non-boolean
+		-Ifile      // I must be non-boolean
 
 	Flag parsing stops after the terminator "--". Unlike the flag package,
 	flags can be interspersed with arguments anywhere on the command line
