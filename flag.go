@@ -902,7 +902,7 @@ func (f *FlagSet) parseArgs(args []string) error {
 					f.usage()
 					return ErrHelp
 				}
-				return f.failf("flag provided but not defined: --%s", name)
+				return f.failf("unknown flag: --%s", name)
 			}
 			flag = m[name]
 		} else {
@@ -915,7 +915,7 @@ func (f *FlagSet) parseArgs(args []string) error {
 						f.usage()
 						return ErrHelp
 					}
-					return f.failf("flag provided but not defined: %q in -%s", c, shortcuts)
+					return f.failf("unknown short flag: %q in -%s", c, shortcuts)
 				}
 				flag = f.shortcuts[c]
 				if i == len(shortcuts) - 1 {
