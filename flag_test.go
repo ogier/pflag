@@ -222,16 +222,16 @@ func TestSetOutput(t *testing.T) {
 // This tests that one can reset the flags. This still works but not well, and is
 // superseded by FlagSet.
 func TestChangingArgs(t *testing.T) {
-	ResetForTesting(func() { panic("ouch") })//t.Fatal("bad parse") })
+	ResetForTesting(func() { t.Fatal("bad parse") })
 	oldArgs := os.Args
 	defer func() { os.Args = oldArgs }()
-	os.Args = []string{"cmd", "--before", "subcmd", "--after", "args"}
+	os.Args = []string{"cmd", "--before", "subcmd"}
 	before := Bool("before", false, "")
 	if err := CommandLine().Parse(os.Args[1:]); err != nil {
 		t.Fatal(err)
 	}
 	cmd := Arg(0)
-	os.Args = Args()
+	os.Args = []string{"subcmd", "--after", "args"}
 	after := Bool("after", false, "")
 	Parse()
 	args := Args()
