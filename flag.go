@@ -3,12 +3,23 @@
 // license that can be found in the LICENSE file.
 
 /*
-	Package flag implements command-line flag parsing.
+	pflag is a drop-in replacement for Go's flag package, implementing
+	POSIX/GNU-style --flags.
 
 	Usage:
 
-	Define flags using flag.String(), Bool(), Int(), etc. Example:
-		import "flag"
+	See the documentation of the flag package. All of the existing
+	functionality of the flag package functions identically from a
+	developer's standpoint with one exception:
+
+	* There is an additional string field "Shortcut" in the Flag struct.
+	Most code never instantiates this struct directly, instead using the
+	flag.String(), Bool(), Int(), etc. functions, and is therefore
+	unaffected.
+
+	Import the pflag package under the name "flag" and all existing code
+	should continue to work with no changes.
+		import flag "pflag"
 		var ip *int = flag.Int("flagname", 1234, "help message for flagname")
 	If you like, you can bind the flag to a variable using the Var() functions.
 		var flagvar int
@@ -33,19 +44,39 @@
 	slice flag.Args() or individually as flag.Arg(i).
 	The arguments are indexed from 0 up to flag.NArg().
 
+	The pflag package also defines some new functions that are not in flag,
+	that give one-letter shortcuts for flags. You can use these by appending
+	'P' to the name of any function that defines a flag.
+		var ip = flag.IntP("flagname", "f", 1234, "help message")
+		var flagvar bool
+		func init() {
+			flag.BoolVarP("boolname", "b", true, "help message")
+		}
+		flag.VarP(&flagVar, "varname", "v", 1234, "help message")
+	Shortcut letters can be used with single dashes on the command line.
+	Boolean shortcut flags can be combined with other shortcut flags.
+
 	Command line flag syntax:
-		-flag
-		-flag=x
-		-flag x  // non-boolean flags only
-	One or two minus signs may be used; they are equivalent.
+		--flag    // boolean flags only
+		--flag=x
+		--flag x  // non-boolean flags only
 	The last form is not permitted for boolean flags because the
 	meaning of the command
-		cmd -x *
+		cmd --flag *
 	will change if there is a file called 0, false, etc.  You must
-	use the -flag=false form to turn off a boolean flag.
+	use the --flag=false form to turn off a boolean flag.
 
-	Flag parsing stops just before the first non-flag argument
-	("-" is a non-flag argument) or after the terminator "--".
+	Unlike the flag package, a single dash before an option means something
+	different than a double dash. Single dashes signify a series of shortcut
+	letters for flags. All but the last shortcut letter must be boolean flags.
+		-f          // f must be boolean
+		-abc        // all flags must be boolean
+		-abcn=1234
+		-abcn 1234  // n must be non-boolean
+
+	Flag parsing stops after the terminator "--". Unlike the flag package,
+	flags can be interspersed with arguments anywhere on the command line
+	before this terminator.
 
 	Integer flags accept 1234, 0664, 0x1234 and may be negative.
 	Boolean flags may be 1, 0, t, f, true, false, TRUE, FALSE, True, False.
@@ -71,7 +102,7 @@ import (
 )
 
 // ErrHelp is the error returned if the flag -help is invoked but no such flag is defined.
-var ErrHelp = errors.New("flag: help requested")
+var ErrHelp = errors.New("pflag: help requested")
 
 // -- bool Value
 type boolValue bool
