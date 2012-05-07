@@ -871,7 +871,6 @@ func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
 	f.shorthands[c] = flag
 }
 
-
 // Var defines a flag with the specified name and usage string. The type and
 // value of the flag are represented by the first argument, of type Value, which
 // typically holds a user-defined implementation of Value. For instance, the
@@ -956,7 +955,7 @@ func (f *FlagSet) parseArgs(args []string) error {
 					return f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
 				}
 				flag = f.shorthands[c]
-				if i == len(shorthands) - 1 {
+				if i == len(shorthands)-1 {
 					break
 				}
 				if shorthands[i+1] == '=' {
