@@ -111,6 +111,7 @@ func testParse(f *FlagSet, t *testing.T) {
 	}
 	boolFlag := f.Bool("bool", false, "bool value")
 	bool2Flag := f.Bool("bool2", false, "bool2 value")
+	bool3Flag := f.Bool("bool3", false, "bool3 value")
 	intFlag := f.Int("int", 0, "int value")
 	int64Flag := f.Int64("int64", 0, "int64 value")
 	uintFlag := f.Uint("uint", 0, "uint value")
@@ -122,13 +123,14 @@ func testParse(f *FlagSet, t *testing.T) {
 	args := []string{
 		"--bool",
 		"--bool2=true",
-		"--int", "22",
-		"--int64", "0x23",
-		"--uint", "24",
-		"--uint64", "25",
-		"--string", "hello",
-		"--float64", "2718e28",
-		"--duration", "2m",
+		"--bool3=false",
+		"--int=22",
+		"--int64=0x23",
+		"--uint=24",
+		"--uint64=25",
+		"--string=hello",
+		"--float64=2718e28",
+		"--duration=2m",
 		extra,
 	}
 	if err := f.Parse(args); err != nil {
@@ -142,6 +144,9 @@ func testParse(f *FlagSet, t *testing.T) {
 	}
 	if *bool2Flag != true {
 		t.Error("bool2 flag should be true, is ", *bool2Flag)
+	}
+	if *bool3Flag != false {
+		t.Error("bool3 flag should be false, is ", *bool2Flag)
 	}
 	if *intFlag != 22 {
 		t.Error("int flag should be 22, is ", *intFlag)
@@ -171,6 +176,52 @@ func testParse(f *FlagSet, t *testing.T) {
 	}
 }
 
+func TestShorthand(t *testing.T) {
+	f := NewFlagSet("shorthand", ContinueOnError)
+	if f.Parsed() {
+		t.Error("f.Parse() = true before Parse")
+	}
+	boolaFlag := f.BoolP("boola", "a", false, "bool value")
+	boolbFlag := f.BoolP("boolb", "b", false, "bool2 value")
+	boolcFlag := f.BoolP("boolc", "c", false, "bool3 value")
+	stringFlag := f.StringP("string", "s", "0", "string value")
+	extra := "interspersed-argument"
+	notaflag := "--i-look-like-a-flag"
+	args := []string{
+		"-ab",
+		extra,
+		"-cs",
+		"hello",
+		"--",
+		notaflag,
+	}
+	if err := f.Parse(args); err != nil {
+		t.Fatal(err)
+	}
+	if !f.Parsed() {
+		t.Error("f.Parse() = false after Parse")
+	}
+	if *boolaFlag != true {
+		t.Error("boola flag should be true, is ", *boolaFlag)
+	}
+	if *boolbFlag != true {
+		t.Error("boolb flag should be true, is ", *boolbFlag)
+	}
+	if *boolcFlag != true {
+		t.Error("boolc flag should be true, is ", *boolcFlag)
+	}
+	if *stringFlag != "hello" {
+		t.Error("string flag should be `hello`, is ", *stringFlag)
+	}
+	if len(f.Args()) != 2 {
+		t.Error("expected one argument, got", len(f.Args()))
+	} else if f.Args()[0] != extra {
+		t.Errorf("expected argument %q got %q", extra, f.Args()[0])
+	} else if f.Args()[1] != notaflag {
+		t.Errorf("expected argument %q got %q", notaflag, f.Args()[1])
+	}
+}
+
 func TestParse(t *testing.T) {
 	ResetForTesting(func() { t.Error("bad parse") })
 	testParse(CommandLine(), t)
@@ -196,8 +247,8 @@ func TestUserDefined(t *testing.T) {
 	var flags FlagSet
 	flags.Init("test", ContinueOnError)
 	var v flagVar
-	flags.Var(&v, "v", "usage")
-	if err := flags.Parse([]string{"--v", "1", "--v", "2", "--v=3"}); err != nil {
+	flags.VarP(&v, "v", "v", "usage")
+	if err := flags.Parse([]string{"--v=1", "-v2", "-v", "3"}); err != nil {
 		t.Error(err)
 	}
 	if len(v) != 3 {

@@ -64,29 +64,27 @@
 	Command line flag syntax:
 		--flag    // boolean flags only
 		--flag=x
-		--flag x  // non-boolean flags only
-	The last form is not permitted for boolean flags because the
-	meaning of the command
-		cmd --flag *
-	will change if there is a file called 0, false, etc.  You must
-	use the --flag=false form to turn off a boolean flag.
 
 	Unlike the flag package, a single dash before an option means something
 	different than a double dash. Single dashes signify a series of shorthand
 	letters for flags. All but the last shorthand letter must be boolean flags.
-		-f          // f must be boolean
-		-abc        // all flags must be boolean
-		-abcn=1234
-		-abcn 1234  // n must be non-boolean
-		-abcn1234   // n must be non-boolean
-		-Ifile      // I must be non-boolean
+		// boolean flags
+		-f
+		-abc
+		// non-boolean flags
+		-n 1234
+		-Ifile
+		// mixed
+		-abcs "hello"
+		-abcn1234
 
 	Flag parsing stops after the terminator "--". Unlike the flag package,
 	flags can be interspersed with arguments anywhere on the command line
 	before this terminator.
 
 	Integer flags accept 1234, 0664, 0x1234 and may be negative.
-	Boolean flags may be 1, 0, t, f, true, false, TRUE, FALSE, True, False.
+	Boolean flags (in their long form) accept 1, 0, t, f, true, false,
+	TRUE, FALSE, True, False.
 	Duration flags accept any input valid for time.ParseDuration.
 
 	The default set of command-line flags is controlled by
@@ -105,6 +103,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -902,6 +901,19 @@ func (f *FlagSet) usage() {
 	}
 }
 
+func (f *FlagSet) setFlag(flag *Flag, value string, origArg string) error {
+	if err := flag.Value.Set(value); err != nil {
+		return f.failf("invalid argument %q for %s: %v", value, origArg, err)
+	}
+	// mark as visited for Visit()
+	if f.actual == nil {
+		f.actual = make(map[string]*Flag)
+	}
+	f.actual[flag.Name] = flag
+
+	return nil
+}
+
 func (f *FlagSet) parseArgs(args []string) error {
 	for len(args) > 0 {
 		s := args[0]
@@ -911,9 +923,6 @@ func (f *FlagSet) parseArgs(args []string) error {
 			continue
 		}
 
-		var flag *Flag = nil
-		has_value := false
-		value := ""
 		if s[1] == '-' {
 			if len(s) == 2 { // "--" terminates the flags
 				f.args = append(f.args, args...)
@@ -923,17 +932,10 @@ func (f *FlagSet) parseArgs(args []string) error {
 			if len(name) == 0 || name[0] == '-' || name[0] == '=' {
 				return f.failf("bad flag syntax: %s", s)
 			}
-			// check for = argument to flag
-			for i := 1; i < len(name); i++ { // equals cannot be first
-				if name[i] == '=' {
-					value = name[i+1:]
-					has_value = true
-					name = name[0:i]
-					break
-				}
-			}
+			split := strings.SplitN(name, "=", 2)
+			name = split[0]
 			m := f.formal
-			_, alreadythere := m[name] // BUG
+			flag, alreadythere := m[name] // BUG
 			if !alreadythere {
 				if name == "help" { // special case for nice help message.
 					f.usage()
@@ -941,12 +943,21 @@ func (f *FlagSet) parseArgs(args []string) error {
 				}
 				return f.failf("unknown flag: --%s", name)
 			}
-			flag = m[name]
+			if len(split) == 1 {
+				if _, ok := flag.Value.(*boolValue); !ok {
+					return f.failf("flag needs an argument: %s", s)
+				}
+				f.setFlag(flag, "true", s)
+			} else {
+				if err := f.setFlag(flag, split[1], s); err != nil {
+					return err
+				}
+			}
 		} else {
 			shorthands := s[1:]
 			for i := 0; i < len(shorthands); i++ {
 				c := shorthands[i]
-				_, alreadythere := f.shorthands[c]
+				flag, alreadythere := f.shorthands[c]
 				if !alreadythere {
 					if c == 'h' { // special case for nice help message.
 						f.usage()
@@ -954,53 +965,26 @@ func (f *FlagSet) parseArgs(args []string) error {
 					}
 					return f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
 				}
-				flag = f.shorthands[c]
-				if i == len(shorthands)-1 {
+				if _, ok := flag.Value.(*boolValue); ok {
+					f.setFlag(flag, "true", s)
+					continue
+				}
+				if i < len(shorthands)-1 {
+					if err := f.setFlag(flag, shorthands[i+1:], s); err != nil {
+						return err
+					}
 					break
 				}
-				if shorthands[i+1] == '=' {
-					value = shorthands[i+2:]
-					has_value = true
-					break
+				if len(args) == 0 {
+					return f.failf("flag needs an argument: %q in -%s", c, shorthands)
 				}
-				if fv, ok := flag.Value.(*boolValue); ok {
-					fv.Set("true")
-				} else {
-					value = shorthands[i+1:]
-					has_value = true
-					break
+				if err := f.setFlag(flag, args[0], s); err != nil {
+					return err
 				}
-			}
-		}
-
-		// we have a flag, possibly with included =value argument
-		if fv, ok := flag.Value.(*boolValue); ok { // special case: doesn't need an arg
-			if has_value {
-				if err := fv.Set(value); err != nil {
-					f.failf("invalid boolean value %q for %s: %v", value, s, err)
-				}
-			} else {
-				fv.Set("true")
-			}
-		} else {
-			// It must have a value, which might be the next argument.
-			if !has_value && len(args) > 0 {
-				// value is the next arg
-				has_value = true
-				value = args[0]
 				args = args[1:]
-			}
-			if !has_value {
-				return f.failf("flag needs an argument: %s", s)
-			}
-			if err := flag.Value.Set(value); err != nil {
-				return f.failf("invalid value %q for %s: %v", value, s, err)
+				break // should be unnecessary
 			}
 		}
-		if f.actual == nil {
-			f.actual = make(map[string]*Flag)
-		}
-		f.actual[flag.Name] = flag
 	}
 	return nil
 }

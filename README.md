@@ -112,30 +112,24 @@ flag set.
 ```
 --flag    // boolean flags only
 --flag=x
---flag x  // non-boolean flags only
 ```
-
-The last form is not permitted for boolean flags because the
-meaning of the command
-
-```
-cmd --flag *
-```
-
-will change if there is a file called 0, false, etc.  You must
-use the --flag=false form to turn off a boolean flag.
 
 Unlike the flag package, a single dash before an option means something
 different than a double dash. Single dashes signify a series of shorthand
 letters for flags. All but the last shorthand letter must be boolean flags.
 
 ```
--f          // f must be boolean
--abc        // all flags must be boolean
--abcn=1234
--abcn 1234  // n must be non-boolean
--abcn1234   // n must be non-boolean
--Ifile      // I must be non-boolean
+// boolean flags
+-f
+-abc
+
+// non-boolean flags
+-n 1234
+-Ifile
+
+// mixed
+-abcs "hello"
+-abcn1234
 ```
 
 Flag parsing stops after the terminator "--". Unlike the flag package,
@@ -143,7 +137,8 @@ flags can be interspersed with arguments anywhere on the command line
 before this terminator.
 
 Integer flags accept 1234, 0664, 0x1234 and may be negative.
-Boolean flags may be 1, 0, t, f, true, false, TRUE, FALSE, True, False.
+Boolean flags (in their long form) accept 1, 0, t, f, true, false,
+TRUE, FALSE, True, False.
 Duration flags accept any input valid for time.ParseDuration.
 
 ## More info
