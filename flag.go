@@ -6,11 +6,11 @@
 	pflag is a drop-in replacement for Go's flag package, implementing
 	POSIX/GNU-style --flags.
 
-	Usage:
-
 	pflag is compatible with the GNU extensions to the POSIX recommendations
 	for command-line options. See
 	http://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
+
+	Usage:
 
 	pflag is a drop-in replacement of Go's native flag package. If you import
 	pflag under the name "flag" then all code should continue to function
