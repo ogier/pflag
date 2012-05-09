@@ -3,9 +3,11 @@
 pflag is a drop-in replacement for Go's flag package, implementing
 POSIX/GNU-style --flags.
 
-pflag is compatible with the GNU extensions to the POSIX recommendations
-for command-line options. See
-http://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
+pflag is compatible with the [GNU extensions to the POSIX recommendations
+for command-line options][1]. For a more precise description, see the
+"Command-line flag syntax" section below.
+
+[1]: http://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
 
 pflag is available under the same style of BSD license as the Go language,
 which can be found in the LICENSE file.
@@ -148,5 +150,7 @@ Duration flags accept any input valid for time.ParseDuration.
 
 You can get a full reference of the pflag package through go's standard
 documentation system, for example by running `godoc -http=:6060` and
-browsing to http://localhost:6060/pkg/github.com/ogier/pflag after
+browsing to [http://localhost:6060/pkg/github.com/ogier/pflag][2] after
 installation.
+
+[2]: http://localhost:6060/pkg/github.com/ogier/pflag
