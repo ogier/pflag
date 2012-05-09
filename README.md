@@ -98,9 +98,16 @@ flag.VarP(&flagVar, "varname", "v", 1234, "help message")
 Shorthand letters can be used with single dashes on the command line.
 Boolean shorthand flags can be combined with other shorthand flags.
 
-Command line flag syntax:
+The default set of command-line flags is controlled by
+top-level functions.  The FlagSet type allows one to define
+independent sets of flags, such as to implement subcommands
+in a command-line interface. The methods of FlagSet are
+analogous to the top-level functions for the command-line
+flag set.
 
-``` go
+## Command line flag syntax
+
+```
 --flag    // boolean flags only
 --flag=x
 --flag x  // non-boolean flags only
@@ -109,7 +116,7 @@ Command line flag syntax:
 The last form is not permitted for boolean flags because the
 meaning of the command
 
-``` go
+```
 cmd --flag *
 ```
 
@@ -120,7 +127,7 @@ Unlike the flag package, a single dash before an option means something
 different than a double dash. Single dashes signify a series of shorthand
 letters for flags. All but the last shorthand letter must be boolean flags.
 
-``` go
+```
 -f          // f must be boolean
 -abc        // all flags must be boolean
 -abcn=1234
@@ -136,13 +143,6 @@ before this terminator.
 Integer flags accept 1234, 0664, 0x1234 and may be negative.
 Boolean flags may be 1, 0, t, f, true, false, TRUE, FALSE, True, False.
 Duration flags accept any input valid for time.ParseDuration.
-
-The default set of command-line flags is controlled by
-top-level functions.  The FlagSet type allows one to define
-independent sets of flags, such as to implement subcommands
-in a command-line interface. The methods of FlagSet are
-analogous to the top-level functions for the command-line
-flag set.
 
 ## More info
 
