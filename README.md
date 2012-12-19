@@ -134,9 +134,8 @@ letters for flags. All but the last shorthand letter must be boolean flags.
 -abcn1234
 ```
 
-Flag parsing stops after the terminator "--". Unlike the flag package,
-flags can be interspersed with arguments anywhere on the command line
-before this terminator.
+Flag parsing stops at the first non-option argument or the terminator
+"--".
 
 Integer flags accept 1234, 0664, 0x1234 and may be negative.
 Boolean flags (in their long form) accept 1, 0, t, f, true, false,

@@ -3,22 +3,20 @@
 // license that can be found in the LICENSE file.
 
 // These examples demonstrate more intricate uses of the flag package.
-package pflag_test
+package pflag
 
 import (
 	"errors"
 	"fmt"
 	"strings"
 	"time"
-
-	flag "github.com/ogier/pflag"
 )
 
 // Example 1: A single string flag called "species" with default value "gopher".
-var species = flag.String("species", "gopher", "the species we are studying")
+var species = String("species", "gopher", "the species we are studying")
 
 // Example 2: A flag with a shorthand letter.
-var gopherType = flag.StringP("gopher_type", "g", "pocket", "the variety of gopher")
+var gopherType = StringP("gopher_type", "g", "pocket", "the variety of gopher")
 
 // Example 3: A user-defined flag type, a slice of durations.
 type interval []time.Duration
@@ -60,7 +58,7 @@ var intervalFlag interval
 func init() {
 	// Tie the command-line flag to the intervalFlag variable and
 	// set a usage message.
-	flag.Var(&intervalFlag, "deltaT", "comma-separated list of intervals to use between events")
+	Var(&intervalFlag, "deltaT", "comma-separated list of intervals to use between events")
 }
 
 func Example() {
