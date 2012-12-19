@@ -883,6 +883,11 @@ func Var(value Value, name string, usage string) {
 	commandLine.VarP(value, name, "", usage)
 }
 
+// Like Var, but accepts a shorthand letter that can be used after a single dash.
+func VarP(value Value, name, shorthand, usage string) {
+	commandLine.VarP(value, name, shorthand, usage)
+}
+
 // failf prints to standard error a formatted error and usage message and
 // returns the error.
 func (f *FlagSet) failf(format string, a ...interface{}) error {
