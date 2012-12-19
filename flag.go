@@ -78,9 +78,8 @@
 		-abcs "hello"
 		-abcn1234
 
-	Flag parsing stops after the terminator "--". Unlike the flag package,
-	flags can be interspersed with arguments anywhere on the command line
-	before this terminator.
+    Flag parsing stops at the first non-option argument or the terminator
+    "--".
 
 	Integer flags accept 1234, 0664, 0x1234 and may be negative.
 	Boolean flags (in their long form) accept 1, 0, t, f, true, false,
@@ -917,11 +916,11 @@ func (f *FlagSet) setFlag(flag *Flag, value string, origArg string) error {
 func (f *FlagSet) parseArgs(args []string) error {
 	for len(args) > 0 {
 		s := args[0]
-		args = args[1:]
 		if len(s) == 0 || s[0] != '-' || len(s) == 1 {
-			f.args = append(f.args, s)
-			continue
+			f.args = args[:]
+			return nil
 		}
+		args = args[1:]
 
 		if s[1] == '-' {
 			if len(s) == 2 { // "--" terminates the flags

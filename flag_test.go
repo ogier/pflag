@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package pflag_test
+package pflag
 
 import (
 	"bytes"
@@ -12,8 +12,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	. "github.com/ogier/pflag"
 )
 
 var (
@@ -190,10 +188,10 @@ func TestShorthand(t *testing.T) {
 	args := []string{
 		"-ab",
 		extra,
+		notaflag,
 		"-cs",
 		"hello",
 		"--",
-		notaflag,
 	}
 	if err := f.Parse(args); err != nil {
 		t.Fatal(err)
@@ -207,14 +205,14 @@ func TestShorthand(t *testing.T) {
 	if *boolbFlag != true {
 		t.Error("boolb flag should be true, is ", *boolbFlag)
 	}
-	if *boolcFlag != true {
-		t.Error("boolc flag should be true, is ", *boolcFlag)
+	if *boolcFlag != false {
+		t.Error("boolc flag should be false, is ", *boolcFlag)
 	}
-	if *stringFlag != "hello" {
-		t.Error("string flag should be `hello`, is ", *stringFlag)
+	if *stringFlag == "hello" {
+		t.Error("string flag should not be `hello`, is ", *stringFlag)
 	}
-	if len(f.Args()) != 2 {
-		t.Error("expected one argument, got", len(f.Args()))
+	if len(f.Args()) != 5 {
+		t.Error("expected 5 arguments, got", len(f.Args()))
 	} else if f.Args()[0] != extra {
 		t.Errorf("expected argument %q got %q", extra, f.Args()[0])
 	} else if f.Args()[1] != notaflag {
