@@ -40,7 +40,9 @@ Most code never instantiates this struct directly, and instead uses
 functions such as String(), BoolVar(), and Var(), and is therefore
 unaffected.
 
-Define flags using flag.String(), Bool(), Int(), etc. Example:
+Define flags using flag.String(), Bool(), Int(), etc.
+
+This declares an integer flag, -flagname, stored in the pointer ip, with type *int.
 
 ``` go
 var ip *int = flag.Int("flagname", 1234, "help message for flagname")
@@ -76,13 +78,13 @@ Flags may then be used directly. If you're using the flags themselves,
 they are all pointers; if you bind to variables, they're values.
 
 ``` go
-fmt.Println("ip has value ", *ip);
-fmt.Println("flagvar has value ", flagvar);
+fmt.Println("ip has value ", *ip)
+fmt.Println("flagvar has value ", flagvar)
 ```
 
 After parsing, the arguments after the flag are available as the
 slice flag.Args() or individually as flag.Arg(i).
-The arguments are indexed from 0 up to flag.NArg().
+The arguments are indexed from 0 through flag.NArg()-1.
 
 The pflag package also defines some new functions that are not in flag,
 that give one-letter shorthands for flags. You can use these by appending

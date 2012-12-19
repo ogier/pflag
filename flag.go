@@ -24,8 +24,10 @@
 	functions such as String(), BoolVar(), and Var(), and is therefore
 	unaffected.
 
-	Define flags using flag.String(), Bool(), Int(), etc. Example:
-		var ip *int = flag.Int("flagname", 1234, "help message for flagname")
+	Define flags using flag.String(), Bool(), Int(), etc.
+
+	This declares an integer flag, -flagname, stored in the pointer ip, with type *int.
+		var ip = flag.Int("flagname", 1234, "help message for flagname")
 	If you like, you can bind the flag to a variable using the Var() functions.
 		var flagvar int
 		func init() {
@@ -42,12 +44,12 @@
 
 	Flags may then be used directly. If you're using the flags themselves,
 	they are all pointers; if you bind to variables, they're values.
-		fmt.Println("ip has value ", *ip);
-		fmt.Println("flagvar has value ", flagvar);
+		fmt.Println("ip has value ", *ip)
+		fmt.Println("flagvar has value ", flagvar)
 
 	After parsing, the arguments after the flag are available as the
 	slice flag.Args() or individually as flag.Arg(i).
-	The arguments are indexed from 0 up to flag.NArg().
+	The arguments are indexed from 0 through flag.NArg()-1.
 
 	The pflag package also defines some new functions that are not in flag,
 	that give one-letter shorthands for flags. You can use these by appending
@@ -843,8 +845,9 @@ func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
 	flag := &Flag{name, shorthand, usage, value, value.String()}
 	_, alreadythere := f.formal[name]
 	if alreadythere {
-		fmt.Fprintf(f.out(), "%s flag redefined: %s\n", f.name, name)
-		panic("flag redefinition") // Happens only if flags are declared with identical names
+		msg := fmt.Sprintf("%s flag redefined: %s", f.name, name)
+		fmt.Fprintln(f.out(), msg)
+		panic(msg) // Happens only if flags are declared with identical names
 	}
 	if f.formal == nil {
 		f.formal = make(map[string]*Flag)
