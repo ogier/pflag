@@ -4,7 +4,10 @@
 
 package pflag
 
-import "os"
+import (
+	"io/ioutil"
+	"os"
+)
 
 // Additional routines compiled into the package only during testing.
 
@@ -12,7 +15,11 @@ import "os"
 // After calling ResetForTesting, parse errors in flag handling will not
 // exit the program.
 func ResetForTesting(usage func()) {
-	commandLine = NewFlagSet(os.Args[0], ContinueOnError)
+	commandLine = &FlagSet{
+		name:          os.Args[0],
+		errorHandling: ContinueOnError,
+		output:        ioutil.Discard,
+	}
 	Usage = usage
 }
 
