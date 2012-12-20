@@ -260,16 +260,16 @@ type FlagSet struct {
 	// a custom error handler.
 	Usage func()
 
-	name           string
-	parsed         bool
-	actual         map[string]*Flag
-	formal         map[string]*Flag
-	shorthands     map[byte]*Flag
-	args           []string // arguments after flags
-	exitOnError    bool     // does the program exit if there's an error?
-	errorHandling  ErrorHandling
-	output         io.Writer // nil means stderr; use out() accessor
-	noInterspersed bool      // do not allow interspersed option/non-option args
+	name          string
+	parsed        bool
+	actual        map[string]*Flag
+	formal        map[string]*Flag
+	shorthands    map[byte]*Flag
+	args          []string // arguments after flags
+	exitOnError   bool     // does the program exit if there's an error?
+	errorHandling ErrorHandling
+	output        io.Writer // nil means stderr; use out() accessor
+	interspersed  bool      // do not allow interspersed option/non-option args
 }
 
 // A Flag represents the state of a flag.
@@ -920,7 +920,7 @@ func (f *FlagSet) parseArgs(args []string) error {
 		s := args[0]
 		args = args[1:]
 		if len(s) == 0 || s[0] != '-' || len(s) == 1 {
-			if f.noInterspersed {
+			if !f.interspersed {
 				f.args = append(f.args, s)
 				f.args = append(f.args, args...)
 				return nil
@@ -1028,9 +1028,9 @@ func Parse() {
 	commandLine.Parse(os.Args[1:])
 }
 
-// Do not support interspersed option/non-option arguments.
-func NoInterspersed() {
-	commandLine.NoInterspersed()
+// Whether to support interspersed option/non-option arguments.
+func SetInterspersed(interspersed bool) {
+	commandLine.SetInterspersed(interspersed)
 }
 
 // Parsed returns true if the command-line flags have been parsed.
@@ -1047,12 +1047,14 @@ func NewFlagSet(name string, errorHandling ErrorHandling) *FlagSet {
 	f := &FlagSet{
 		name:          name,
 		errorHandling: errorHandling,
+		interspersed:  true,
 	}
 	return f
 }
 
-func (f *FlagSet) NoInterspersed() {
-	f.noInterspersed = true
+// Whether to support interspersed option/non-option arguments.
+func (f *FlagSet) SetInterspersed(interspersed bool) {
+	f.interspersed = interspersed
 }
 
 // Init sets the name and error handling property for a flag set.

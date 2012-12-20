@@ -338,7 +338,7 @@ func TestHelp(t *testing.T) {
 
 func TestNoInterspersed(t *testing.T) {
 	f := NewFlagSet("test", ContinueOnError)
-	f.NoInterspersed()
+	f.SetInterspersed(false)
 	f.Bool("true", true, "always true")
 	f.Bool("false", false, "always false")
 	err := f.Parse([]string{"--true", "break", "--false"})
