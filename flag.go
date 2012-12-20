@@ -269,7 +269,7 @@ type FlagSet struct {
 	exitOnError   bool     // does the program exit if there's an error?
 	errorHandling ErrorHandling
 	output        io.Writer // nil means stderr; use out() accessor
-	interspersed  bool      // do not allow interspersed option/non-option args
+	interspersed  bool      // allow interspersed option/non-option args
 }
 
 // A Flag represents the state of a flag.
