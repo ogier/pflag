@@ -271,6 +271,7 @@ type FlagSet struct {
 	exitOnError   bool     // does the program exit if there's an error?
 	errorHandling ErrorHandling
 	output        io.Writer // nil means stderr; use out() accessor
+	interspersed  bool      // allow interspersed option/non-option args
 }
 
 // A Flag represents the state of a flag.
@@ -927,6 +928,11 @@ func (f *FlagSet) parseArgs(args []string) error {
 		s := args[0]
 		args = args[1:]
 		if len(s) == 0 || s[0] != '-' || len(s) == 1 {
+			if !f.interspersed {
+				f.args = append(f.args, s)
+				f.args = append(f.args, args...)
+				return nil
+			}
 			f.args = append(f.args, s)
 			continue
 		}
@@ -1030,6 +1036,11 @@ func Parse() {
 	commandLine.Parse(os.Args[1:])
 }
 
+// Whether to support interspersed option/non-option arguments.
+func SetInterspersed(interspersed bool) {
+	commandLine.SetInterspersed(interspersed)
+}
+
 // Parsed returns true if the command-line flags have been parsed.
 func Parsed() bool {
 	return commandLine.Parsed()
@@ -1044,8 +1055,14 @@ func NewFlagSet(name string, errorHandling ErrorHandling) *FlagSet {
 	f := &FlagSet{
 		name:          name,
 		errorHandling: errorHandling,
+		interspersed:  true,
 	}
 	return f
+}
+
+// Whether to support interspersed option/non-option arguments.
+func (f *FlagSet) SetInterspersed(interspersed bool) {
+	f.interspersed = interspersed
 }
 
 // Init sets the name and error handling property for a flag set.

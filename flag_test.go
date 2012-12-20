@@ -335,3 +335,18 @@ func TestHelp(t *testing.T) {
 		t.Fatal("help was called; should not have been for defined help flag")
 	}
 }
+
+func TestNoInterspersed(t *testing.T) {
+	f := NewFlagSet("test", ContinueOnError)
+	f.SetInterspersed(false)
+	f.Bool("true", true, "always true")
+	f.Bool("false", false, "always false")
+	err := f.Parse([]string{"--true", "break", "--false"})
+	if err != nil {
+		t.Fatal("expected no error; got ", err)
+	}
+	args := f.Args()
+	if len(args) != 2 || args[0] != "break" || args[1] != "--false" {
+		t.Fatal("expected interspersed options/non-options to fail")
+	}
+}
