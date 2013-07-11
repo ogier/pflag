@@ -145,9 +145,11 @@ Duration flags accept any input valid for time.ParseDuration.
 
 ## More info
 
-You can get a full reference of the pflag package through go's standard
-documentation system, for example by running `godoc -http=:6060` and
-browsing to [http://localhost:6060/pkg/github.com/ogier/pflag][2] after
+You can see the full reference documentation of the pflag package
+[at godoc.org][3], or through go's standard documentation system by
+running `godoc -http=:6060` and browsing to
+[http://localhost:6060/pkg/github.com/ogier/pflag][2] after
 installation.
 
 [2]: http://localhost:6060/pkg/github.com/ogier/pflag
+[3]: http://godoc.org/github.com/ogier/pflag
