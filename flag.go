@@ -868,7 +868,7 @@ func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
 	c := shorthand[0]
 	old, alreadythere := f.shorthands[c]
 	if alreadythere {
-		fmt.Fprintf(f.out(), "%s shorthand reused: %q for %s and %s\n", f.name, c, name, old.Name)
+		fmt.Fprintf(f.out(), "%s shorthand reused: %q for %s already used for %s\n", f.name, c, name, old.Name)
 		panic("shorthand redefinition")
 	}
 	f.shorthands[c] = flag
