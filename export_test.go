@@ -23,7 +23,7 @@ func ResetForTesting(usage func()) {
 	Usage = usage
 }
 
-// CommandLine returns the default FlagSet.
+// GetCommandLine returns the default FlagSet.
 func GetCommandLine() *FlagSet {
 	return CommandLine
 }
