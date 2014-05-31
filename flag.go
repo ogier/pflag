@@ -57,7 +57,7 @@
 		var ip = flag.IntP("flagname", "f", 1234, "help message")
 		var flagvar bool
 		func init() {
-			flag.BoolVarP("boolname", "b", true, "help message")
+			flag.BoolVarP(&flagvar, "boolname", "b", true, "help message")
 		}
 		flag.VarP(&flagVar, "varname", "v", 1234, "help message")
 	Shorthand letters can be used with single dashes on the command line.
