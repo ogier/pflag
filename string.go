@@ -28,6 +28,11 @@ func (f *FlagSet) StringVarP(p *string, name, shorthand string, value string, us
 	f.VarP(newStringValue(value, p), name, shorthand, usage)
 }
 
+// Like StringVar, but only accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) StringVarS(p *string, shorthand string, value string, usage string) {
+	f.VarP(newStringValue(value, p), "", shorthand, usage)
+}
+
 // StringVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a string variable in which to store the value of the flag.
 func StringVar(p *string, name string, value string, usage string) {
@@ -37,6 +42,11 @@ func StringVar(p *string, name string, value string, usage string) {
 // Like StringVar, but accepts a shorthand letter that can be used after a single dash.
 func StringVarP(p *string, name, shorthand string, value string, usage string) {
 	CommandLine.VarP(newStringValue(value, p), name, shorthand, usage)
+}
+
+// Like StringVar, but only accepts a shorthand letter that can be used after a single dash.
+func StringVarS(p *string, shorthand string, value string, usage string) {
+	CommandLine.VarP(newStringValue(value, p), "", shorthand, usage)
 }
 
 // String defines a string flag with specified name, default value, and usage string.
@@ -54,6 +64,13 @@ func (f *FlagSet) StringP(name, shorthand string, value string, usage string) *s
 	return p
 }
 
+// Like String, but only accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) StringS(shorthand string, value string, usage string) *string {
+	p := new(string)
+	f.StringVarP(p, "", shorthand, value, usage)
+	return p
+}
+
 // String defines a string flag with specified name, default value, and usage string.
 // The return value is the address of a string variable that stores the value of the flag.
 func String(name string, value string, usage string) *string {
@@ -63,4 +80,9 @@ func String(name string, value string, usage string) *string {
 // Like String, but accepts a shorthand letter that can be used after a single dash.
 func StringP(name, shorthand string, value string, usage string) *string {
 	return CommandLine.StringP(name, shorthand, value, usage)
+}
+
+// Like String, but only accepts a shorthand letter that can be used after a single dash.
+func StringS(shorthand string, value string, usage string) *string {
+	return CommandLine.StringP("", shorthand, value, usage)
 }

@@ -37,6 +37,11 @@ func (f *FlagSet) IPVarP(p *net.IP, name, shorthand string, value net.IP, usage 
 	f.VarP(newIPValue(value, p), name, shorthand, usage)
 }
 
+// Like IPVar, but only accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) IPVarS(p *net.IP, shorthand string, value net.IP, usage string) {
+	f.VarP(newIPValue(value, p), "", shorthand, usage)
+}
+
 // IPVar defines an net.IP flag with specified name, default value, and usage string.
 // The argument p points to an net.IP variable in which to store the value of the flag.
 func IPVar(p *net.IP, name string, value net.IP, usage string) {
@@ -46,6 +51,11 @@ func IPVar(p *net.IP, name string, value net.IP, usage string) {
 // Like IPVar, but accepts a shorthand letter that can be used after a single dash.
 func IPVarP(p *net.IP, name, shorthand string, value net.IP, usage string) {
 	CommandLine.VarP(newIPValue(value, p), name, shorthand, usage)
+}
+
+// Like IPVar, but only accepts a shorthand letter that can be used after a single dash.
+func IPVarS(p *net.IP, shorthand string, value net.IP, usage string) {
+	CommandLine.VarP(newIPValue(value, p), "", shorthand, usage)
 }
 
 // IP defines an net.IP flag with specified name, default value, and usage string.
@@ -63,6 +73,13 @@ func (f *FlagSet) IPP(name, shorthand string, value net.IP, usage string) *net.I
 	return p
 }
 
+// Like IP, but only accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) IPS(shorthand string, value net.IP, usage string) *net.IP {
+	p := new(net.IP)
+	f.IPVarP(p, "", shorthand, value, usage)
+	return p
+}
+
 // IP defines an net.IP flag with specified name, default value, and usage string.
 // The return value is the address of an net.IP variable that stores the value of the flag.
 func IP(name string, value net.IP, usage string) *net.IP {
@@ -72,4 +89,9 @@ func IP(name string, value net.IP, usage string) *net.IP {
 // Like IP, but accepts a shorthand letter that can be used after a single dash.
 func IPP(name, shorthand string, value net.IP, usage string) *net.IP {
 	return CommandLine.IPP(name, shorthand, value, usage)
+}
+
+// Like IP, but only accepts a shorthand letter that can be used after a single dash.
+func IPS(shorthand string, value net.IP, usage string) *net.IP {
+	return CommandLine.IPP("", shorthand, value, usage)
 }
