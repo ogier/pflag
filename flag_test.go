@@ -350,3 +350,15 @@ func TestNoInterspersed(t *testing.T) {
 		t.Fatal("expected interspersed options/non-options to fail")
 	}
 }
+
+// Check that we print out the proper offending flag if there is an unknown one. (#14)
+func TestUnknownFlag(t *testing.T) {
+	f := NewFlagSet("test", ContinueOnError)
+	var buf bytes.Buffer
+	f.SetOutput(&buf)
+	f.Bool("bar", true, "this one is defined")
+	f.Parse([]string{"--bar", "--baz"})
+	if out := buf.String(); strings.Contains(out, "unknown flag: --bar") || !strings.Contains(out, "unknown flag: --baz") {
+		t.Fatal("expected --baz to be reported unknown; got ", out)
+	}
+}
