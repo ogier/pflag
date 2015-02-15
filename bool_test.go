@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package pflag_test
+package pflag
 
 import (
 	"bytes"
 	"fmt"
 	"strconv"
 	"testing"
-
-	. "github.com/ogier/pflag"
 )
 
 // This value can be a boolean ("true", "false") or "maybe"
