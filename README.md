@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ogier/pflag.png?branch=master)](https://travis-ci.org/ogier/pflag)
+
 ## Description
 
 pflag is a drop-in replacement for Go's flag package, implementing
