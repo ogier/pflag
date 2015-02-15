@@ -33,6 +33,11 @@ func (f *FlagSet) Uint16VarP(p *uint16, name, shorthand string, value uint16, us
 	f.VarP(newUint16Value(value, p), name, shorthand, usage)
 }
 
+// Like Uint16Var, but only accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) Uint16VarS(p *uint16, shorthand string, value uint16, usage string) {
+	f.VarP(newUint16Value(value, p), "", shorthand, usage)
+}
+
 // Uint16Var defines a uint flag with specified name, default value, and usage string.
 // The argument p points to a uint  variable in which to store the value of the flag.
 func Uint16Var(p *uint16, name string, value uint16, usage string) {
@@ -42,6 +47,11 @@ func Uint16Var(p *uint16, name string, value uint16, usage string) {
 // Like Uint16Var, but accepts a shorthand letter that can be used after a single dash.
 func Uint16VarP(p *uint16, name, shorthand string, value uint16, usage string) {
 	CommandLine.VarP(newUint16Value(value, p), name, shorthand, usage)
+}
+
+// Like Uint16Var, but only accepts a shorthand letter that can be used after a single dash.
+func Uint16Vars(p *uint16, shorthand string, value uint16, usage string) {
+	CommandLine.VarP(newUint16Value(value, p), "", shorthand, usage)
 }
 
 // Uint16 defines a uint flag with specified name, default value, and usage string.
@@ -59,6 +69,13 @@ func (f *FlagSet) Uint16P(name, shorthand string, value uint16, usage string) *u
 	return p
 }
 
+// Like Uint16, but only accepts a shorthand letter that can be used after a single dash.
+func (f *FlagSet) Uint16S(shorthand string, value uint16, usage string) *uint16 {
+	p := new(uint16)
+	f.Uint16VarP(p, "", shorthand, value, usage)
+	return p
+}
+
 // Uint16 defines a uint flag with specified name, default value, and usage string.
 // The return value is the address of a uint  variable that stores the value of the flag.
 func Uint16(name string, value uint16, usage string) *uint16 {
@@ -68,4 +85,9 @@ func Uint16(name string, value uint16, usage string) *uint16 {
 // Like Uint16, but accepts a shorthand letter that can be used after a single dash.
 func Uint16P(name, shorthand string, value uint16, usage string) *uint16 {
 	return CommandLine.Uint16P(name, shorthand, value, usage)
+}
+
+// Like Uint16, but only accepts a shorthand letter that can be used after a single dash.
+func Uint16S(shorthand string, value uint16, usage string) *uint16 {
+	return CommandLine.Uint16P("", shorthand, value, usage)
 }

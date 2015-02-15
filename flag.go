@@ -63,6 +63,9 @@
 	Shorthand letters can be used with single dashes on the command line.
 	Boolean shorthand flags can be combined with other shorthand flags.
 
+	It also defines functions that only give shorthands. You can use these by
+	appending 'S' to the name of any function that defines a flag.
+
 	Command line flag syntax:
 		--flag    // boolean flags only
 		--flag=x
@@ -246,12 +249,17 @@ func (f *FlagSet) PrintDefaults() {
 			// put quotes on the value
 			format = "--%s=%q: %s\n"
 		}
-		if len(flag.Shorthand) > 0 {
-			format = "  -%s, " + format
+		if flag.Name[0] == '\x00' {
+			format = "      " + format[1:]
+			fmt.Fprintf(f.out(), format, flag.Shorthand, flag.DefValue, flag.Usage)
 		} else {
-			format = "   %s   " + format
+			if len(flag.Shorthand) > 0 {
+				format = "  -%s, " + format
+			} else {
+				format = "   %s   " + format
+			}
+			fmt.Fprintf(f.out(), format, flag.Shorthand, flag.Name, flag.DefValue, flag.Usage)
 		}
-		fmt.Fprintf(f.out(), format, flag.Shorthand, flag.Name, flag.DefValue, flag.Usage)
 	})
 }
 
@@ -322,6 +330,13 @@ func (f *FlagSet) Var(value Value, name string, usage string) {
 
 // Like Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
+	if name == "" {
+		if shorthand == "" {
+			panic("no name or shorthand")
+		} else {
+			name = "\x00" + shorthand
+		}
+	}
 	// Remember the default value as a string; it won't change.
 	flag := &Flag{name, shorthand, usage, value, value.String()}
 	_, alreadythere := f.formal[name]
