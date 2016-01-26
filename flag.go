@@ -262,7 +262,11 @@ func PrintDefaults() {
 
 // defaultUsage is the default function to print a usage message.
 func defaultUsage(f *FlagSet) {
-	fmt.Fprintf(f.out(), "Usage of %s:\n", f.name)
+	if f.name == "" {
+		fmt.Fprintf(f.out(), "Usage:\n")
+	} else {
+		fmt.Fprintf(f.out(), "Usage of %s:\n", f.name)
+	}
 	f.PrintDefaults()
 }
 
