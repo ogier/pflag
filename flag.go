@@ -237,21 +237,87 @@ func Set(name, value string) error {
 	return CommandLine.Set(name, value)
 }
 
-// PrintDefaults prints, to standard error unless configured
-// otherwise, the default values of all defined flags in the set.
+// isZeroValue guesses whether the string represents the zero
+// value for a flag. It is not accurate but in practice works OK.
+func isZeroValue(value string) bool {
+	switch value {
+	case "false":
+		return true
+	case "":
+		return true
+	case "0":
+		return true
+	}
+	return false
+}
+
+// UnquoteUsage extracts a back-quoted name from the usage
+// string for a flag and returns it and the un-quoted usage.
+// Given "a `name` to show" it returns ("name", "a name to show").
+// If there are no back quotes, the name is an educated guess of the
+// type of the flag's value, or the empty string if the flag is boolean.
+func UnquoteUsage(flag *Flag) (name string, usage string) {
+	// Look for a back-quoted name, but avoid the strings package.
+	usage = flag.Usage
+	for i := 0; i < len(usage); i++ {
+		if usage[i] == '`' {
+			for j := i + 1; j < len(usage); j++ {
+				if usage[j] == '`' {
+					name = usage[i+1 : j]
+					usage = usage[:i] + name + usage[j+1:]
+					return name, usage
+				}
+			}
+			break // Only one back quote; use type name.
+		}
+	}
+	// No explicit name, so use type if we can find one.
+	name = "value"
+	switch flag.Value.(type) {
+	case boolFlag:
+		name = ""
+	case *durationValue:
+		name = "duration"
+	case *float64Value:
+		name = "float"
+	case *intValue, *int64Value:
+		name = "int"
+	case *stringValue:
+		name = "string"
+	case *uintValue, *uint64Value:
+		name = "uint"
+	}
+	return
+}
+
+// PrintDefaults prints to standard error the default values of all
+// defined command-line flags in the set. See the documentation for
+// the global function PrintDefaults for more information.
 func (f *FlagSet) PrintDefaults() {
 	f.VisitAll(func(flag *Flag) {
-		format := "--%s=%s: %s\n"
-		if _, ok := flag.Value.(*stringValue); ok {
-			// put quotes on the value
-			format = "--%s=%q: %s\n"
-		}
+		s := ""
 		if len(flag.Shorthand) > 0 {
-			format = "  -%s, " + format
+			s = fmt.Sprintf("  -%s, --%s", flag.Shorthand, flag.Name)
 		} else {
-			format = "   %s   " + format
+			s = fmt.Sprintf("  --%s", flag.Name)
 		}
-		fmt.Fprintf(f.out(), format, flag.Shorthand, flag.Name, flag.DefValue, flag.Usage)
+
+		name, usage := UnquoteUsage(flag)
+		if len(name) > 0 {
+			s += " " + name
+		}
+
+		s += "\n    \t"
+		s += usage
+		if !isZeroValue(flag.DefValue) {
+			if _, ok := flag.Value.(*stringValue); ok {
+				// put quotes on the value
+				s += fmt.Sprintf(" (default %q)", flag.DefValue)
+			} else {
+				s += fmt.Sprintf(" (default %v)", flag.DefValue)
+			}
+		}
+		fmt.Fprint(f.out(), s, "\n")
 	})
 }
 
@@ -262,7 +328,11 @@ func PrintDefaults() {
 
 // defaultUsage is the default function to print a usage message.
 func defaultUsage(f *FlagSet) {
-	fmt.Fprintf(f.out(), "Usage of %s:\n", f.name)
+	if f.name == "" {
+		fmt.Fprintf(f.out(), "Usage:\n")
+	} else {
+		fmt.Fprintf(f.out(), "Usage of %s:\n", f.name)
+	}
 	f.PrintDefaults()
 }
 
