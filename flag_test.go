@@ -348,3 +348,41 @@ func TestNoInterspersed(t *testing.T) {
 		t.Fatal("expected interspersed options/non-options to fail")
 	}
 }
+
+type testreglookup struct {
+	a string
+	b string
+}
+
+func TestRegisterLookup(t *testing.T) {
+	var args testreglookup
+
+	aname, bname := "XXXname", "YYYname"
+	ausage, busage := "XXXusage", "YYYusage"
+
+	f := NewFlagSet("test", ContinueOnError)
+	f.StringVar(&args.a, aname, "", ausage)
+	f.StringVar(&args.b, bname, "", busage)
+
+	al := f.Lookup(aname)
+	if al == nil {
+		t.Fatal("lookup for a failed (it was nil)")
+	}
+	if al.Name != aname || al.Usage != ausage {
+		t.Fatal("the lookup'd name for %s was incorrect. expected=%q actual=%q", aname, aname, al.Name)
+	}
+	if al.Usage != ausage {
+		t.Fatal("the lookup'd usage for %s was incorrect. expected=%q actual=%q", aname, ausage, al.Usage)
+	}
+
+	bl := f.Lookup(aname)
+	if bl == nil {
+		t.Fatal("lookup for a failed (it was nil)")
+	}
+	if bl.Name != bname || bl.Usage != busage {
+		t.Fatal("the lookup'd name for %s was incorrect. expected=%q actubl=%q", bname, bname, bl.Name)
+	}
+	if bl.Usage != busage {
+		t.Fatal("the lookup'd usage for %s was incorrect. expected=%q actubl=%q", bname, busage, bl.Usage)
+	}
+}
