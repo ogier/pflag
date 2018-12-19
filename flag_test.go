@@ -242,8 +242,7 @@ func (f *flagVar) Set(value string) error {
 }
 
 func TestUserDefined(t *testing.T) {
-	var flags FlagSet
-	flags.Init("test", ContinueOnError)
+	flags := NewFlagSet("test", ContinueOnError)
 	var v flagVar
 	flags.VarP(&v, "v", "v", "usage")
 	if err := flags.Parse([]string{"--v=1", "-v2", "-v", "3"}); err != nil {
@@ -259,10 +258,9 @@ func TestUserDefined(t *testing.T) {
 }
 
 func TestSetOutput(t *testing.T) {
-	var flags FlagSet
+	flags := NewFlagSet("test", ContinueOnError)
 	var buf bytes.Buffer
 	flags.SetOutput(&buf)
-	flags.Init("test", ContinueOnError)
 	flags.Parse([]string{"--unknown"})
 	if out := buf.String(); !strings.Contains(out, "--unknown") {
 		t.Logf("expected output mentioning unknown; got %q", out)
@@ -346,5 +344,27 @@ func TestNoInterspersed(t *testing.T) {
 	args := f.Args()
 	if len(args) != 2 || args[0] != "break" || args[1] != "--false" {
 		t.Fatal("expected interspersed options/non-options to fail")
+	}
+}
+
+func TestIsSpecified(t *testing.T) {
+	f := NewFlagSet("test", ContinueOnError)
+	f.SetInterspersed(false)
+	f.Bool("alpha", true, "always true")
+	f.Bool("beta", false, "always false")
+	err := f.Parse([]string{"--beta"})
+	if err != nil {
+		t.Fatal("expected no error; got ", err)
+	}
+	args := f.Args()
+	if len(args) != 0  {
+		t.Fatal("expected no extra args")
+	}
+
+	if !f.IsSpecified("beta") {
+		t.Fatal("expected beta to be specified")
+	}
+	if f.IsSpecified("alpha") {
+		t.Fatal("expected alpha to not be specified")
 	}
 }

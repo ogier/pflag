@@ -19,6 +19,7 @@ func ResetForTesting(usage func()) {
 		name:          os.Args[0],
 		errorHandling: ContinueOnError,
 		output:        ioutil.Discard,
+		actual:        map[string]*Flag{},
 	}
 	Usage = usage
 }
