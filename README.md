@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/ogier/pflag.png?branch=master)](https://travis-ci.org/ogier/pflag)
+[![Build Status](https://travis-ci.org/ogier/pflag.svg?branch=master)](https://travis-ci.org/ogier/pflag)
+[![GoDoc](https://godoc.org/github.com/ogier/pflag?status.svg)][3]
 
 ## Description
 
