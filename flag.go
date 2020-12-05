@@ -215,6 +215,17 @@ func Lookup(name string) *Flag {
 	return CommandLine.formal[name]
 }
 
+// IsSpecified returns true if the named flag was specified via command-line flags.
+func (f *FlagSet) IsSpecified(name string) bool {
+	_, ok := f.actual[name]
+	return ok
+}
+
+// IsSpecified returns true if the named flag was specified via command-line flags.
+func IsSpecified(name string) bool {
+	return CommandLine.IsSpecified(name)
+}
+
 // Set sets the value of the named flag.
 func (f *FlagSet) Set(name, value string) error {
 	flag, ok := f.formal[name]
@@ -224,9 +235,6 @@ func (f *FlagSet) Set(name, value string) error {
 	err := flag.Value.Set(value)
 	if err != nil {
 		return err
-	}
-	if f.actual == nil {
-		f.actual = make(map[string]*Flag)
 	}
 	f.actual[name] = flag
 	return nil
@@ -465,9 +473,6 @@ func (f *FlagSet) setFlag(flag *Flag, value string, origArg string) error {
 		return f.failf("invalid argument %q for %s: %v", value, origArg, err)
 	}
 	// mark as visited for Visit()
-	if f.actual == nil {
-		f.actual = make(map[string]*Flag)
-	}
 	f.actual[flag.Name] = flag
 
 	return nil
@@ -606,6 +611,7 @@ func NewFlagSet(name string, errorHandling ErrorHandling) *FlagSet {
 		name:          name,
 		errorHandling: errorHandling,
 		interspersed:  true,
+		actual: map[string]*Flag{},
 	}
 	return f
 }
@@ -613,12 +619,4 @@ func NewFlagSet(name string, errorHandling ErrorHandling) *FlagSet {
 // Whether to support interspersed option/non-option arguments.
 func (f *FlagSet) SetInterspersed(interspersed bool) {
 	f.interspersed = interspersed
-}
-
-// Init sets the name and error handling property for a flag set.
-// By default, the zero FlagSet uses an empty name and the
-// ContinueOnError error handling policy.
-func (f *FlagSet) Init(name string, errorHandling ErrorHandling) {
-	f.name = name
-	f.errorHandling = errorHandling
 }
